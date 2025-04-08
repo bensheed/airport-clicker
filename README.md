@@ -1,3 +1,5 @@
+[![Play on GitHub Pages](https://img.shields.io/badge/Play-Now-brightgreen?style=for-the-badge&logo=github)](https://bensheed.github.io/airport-clicker/)
+
 # Airport Clicker
 
 A Civilization Clicker-inspired incremental game about growing and managing an airport.
