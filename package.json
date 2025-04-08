@@ -1,0 +1,24 @@
+{
+  "name": "airport-clicker",
+  "version": "1.0.0",
+  "description": "A Civilization Clicker-inspired incremental game about growing and managing an airport.",
+  "main": "game.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bensheed/airport-clicker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bensheed/airport-clicker/issues"
+  },
+  "homepage": "https://github.com/bensheed/airport-clicker#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
