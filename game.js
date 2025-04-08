@@ -235,6 +235,48 @@ function showClickFeedback(text) {
         feedback.remove();
     }, 1500);
 }
+// Update the enabled/disabled state of buy/hire buttons
+function updateButtonStates() {
+    const currentMoney = gameState.money;
+    const buttons = document.querySelectorAll('.buy-button');
+
+    buttons.forEach(button => {
+        let item;
+        let cost;
+        let isPurchased = false; // Specific to upgrades
+
+        const buildingId = button.getAttribute('data-building');
+        const staffId = button.getAttribute('data-staff');
+        const upgradeId = button.getAttribute('data-upgrade');
+
+        if (buildingId) {
+            item = gameState.buildings.find(b => b.id === buildingId);
+            if (item) {
+                cost = Math.floor(item.baseCost * Math.pow(1.15, item.owned));
+            }
+        } else if (staffId) {
+            item = gameState.staff.find(s => s.id === staffId);
+            if (item) {
+                cost = Math.floor(item.baseCost * Math.pow(1.2, item.owned));
+            }
+        } else if (upgradeId) {
+            item = gameState.upgrades.find(u => u.id === upgradeId);
+            if (item) {
+                cost = item.cost;
+                isPurchased = item.purchased;
+            }
+        }
+
+        if (item) {
+            // Disable if purchased (for upgrades) or if cannot afford
+            button.disabled = isPurchased || currentMoney < cost;
+        } else {
+            // If item not found for some reason, disable the button
+            button.disabled = true;
+        }
+    });
+}
+
 
 // Game loop (runs every second)
 function gameLoop() {
@@ -258,6 +300,7 @@ function gameLoop() {
     
     // Update display
     updateResourceDisplay();
+    updateButtonStates(); // Update button states based on new money
     
     // Check for level up
     checkLevelUp();
@@ -517,6 +560,8 @@ function renderUpgrades() {
                 <div class="upgrade-effect">${upgrade.effect}</div>
                 <button class="buy-button" data-upgrade="${upgrade.id}" ${canAfford ? '' : 'disabled'}>Purchase</button>
             `;
+
+
             
             upgradeList.appendChild(upgradeElement);
             
