@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airport Clicker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>Airport Clicker</h1>
+            <div class="resources">
+                <div class="resource">
+                    <span>Money: </span>
+                    <span id="money">0</span>
+                </div>
+                <div class="resource">
+                    <span>Passengers: </span>
+                    <span id="passengers">0</span>
+                </div>
+                <div class="resource">
+                    <span>Reputation: </span>
+                    <span id="reputation">0</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="game-area">
+                <div class="clicker-area">
+                    <button id="main-clicker">Operate Flight</button>
+                    <div id="click-feedback"></div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="buildings">Buildings</button>
+                    <button class="tab-button" data-tab="staff">Staff</button>
+                    <button class="tab-button" data-tab="upgrades">Upgrades</button>
+                    <button class="tab-button" data-tab="stats">Stats</button>
+                </div>
+
+                <div class="tab-content">
+                    <div id="buildings" class="tab-pane active">
+                        <h2>Airport Buildings</h2>
+                        <div class="building-list">
+                            <!-- Buildings will be added here dynamically -->
+                        </div>
+                    </div>
+
+                    <div id="staff" class="tab-pane">
+                        <h2>Airport Staff</h2>
+                        <div class="staff-list">
+                            <!-- Staff will be added here dynamically -->
+                        </div>
+                    </div>
+
+                    <div id="upgrades" class="tab-pane">
+                        <h2>Airport Upgrades</h2>
+                        <div class="upgrade-list">
+                            <!-- Upgrades will be added here dynamically -->
+                        </div>
+                    </div>
+
+                    <div id="stats" class="tab-pane">
+                        <h2>Airport Statistics</h2>
+                        <div class="stats-container">
+                            <div class="stat">
+                                <span>Total Flights: </span>
+                                <span id="total-flights">0</span>
+                            </div>
+                            <div class="stat">
+                                <span>Total Passengers: </span>
+                                <span id="total-passengers">0</span>
+                            </div>
+                            <div class="stat">
+                                <span>Airport Level: </span>
+                                <span id="airport-level">1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notifications">
+                <h3>Notifications</h3>
+                <div id="notification-list">
+                    <!-- Notifications will appear here -->
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Airport Clicker - A Civ Clicker-inspired game about managing an airport</p>
+        </footer>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
