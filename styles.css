@@ -278,3 +278,23 @@ footer {
         grid-template-columns: 1fr;
     }
 }
+/* Tab Badges */
+.tab-button {
+    position: relative; /* Needed for absolute positioning of badge */
+}
+
+.badge {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+    border: 1px solid white;
+}
+
+.badge.visible {
+    display: block; /* Show when visible class is added */
+}
