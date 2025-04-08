@@ -206,8 +206,10 @@ function handleMainClick() {
     // Check for level up
     checkLevelUp();
     
-    // Re-render buildings to update buy buttons
+    // Re-render buildings, staff, and upgrades to update buy buttons
     renderBuildings();
+    renderStaff();
+    renderUpgrades();
     
     // Debug log
     console.log("After click - Money:", gameState.money, "Passengers:", gameState.passengers);
