@@ -168,6 +168,7 @@ function initGame() {
     // Welcome notification
     addNotification('Welcome to Airport Clicker! Click "Operate Flight" to start earning money.', 'info');
 }
+    updateTabBadges(); // Initial badge check
 
 // Main click handler
 function handleMainClick() {
@@ -211,6 +212,7 @@ function handleMainClick() {
     renderStaff();
     renderUpgrades();
     
+    updateTabBadges();
     // Debug log
     console.log("After click - Money:", gameState.money, "Passengers:", gameState.passengers);
     
@@ -263,6 +265,7 @@ function gameLoop() {
     // Update passive income rates for display
     gameState.moneyPerSecond = moneyPerSecond;
     gameState.passengersPerSecond = passengersPerSecond;
+    updateTabBadges();
 }
 
 // Check if airport level should increase
@@ -321,6 +324,34 @@ function updateResourceDisplay() {
     document.getElementById('airport-level').textContent = gameState.airportLevel;
 }
 
+// Update tab badges based on affordability and active tab
+function updateTabBadges() {
+    const currentMoney = gameState.money;
+    const activeTabId = document.querySelector('.tab-pane.active')?.id;
+
+    // Check Buildings
+    const canAffordBuilding = gameState.buildings.some(b => b.unlocked && currentMoney >= Math.floor(b.baseCost * Math.pow(1.15, b.owned)));
+    const buildingTabButton = document.querySelector('.tab-button[data-tab="buildings"] .badge');
+    if (buildingTabButton) {
+        buildingTabButton.classList.toggle('visible', canAffordBuilding && activeTabId !== 'buildings');
+    }
+
+    // Check Staff
+    const canAffordStaff = gameState.staff.some(s => s.unlocked && currentMoney >= Math.floor(s.baseCost * Math.pow(1.2, s.owned)));
+    const staffTabButton = document.querySelector('.tab-button[data-tab="staff"] .badge');
+    if (staffTabButton) {
+        staffTabButton.classList.toggle('visible', canAffordStaff && activeTabId !== 'staff');
+    }
+
+    // Check Upgrades
+    const canAffordUpgrade = gameState.upgrades.some(u => u.unlocked && !u.purchased && currentMoney >= u.cost);
+    const upgradeTabButton = document.querySelector('.tab-button[data-tab="upgrades"] .badge');
+    if (upgradeTabButton) {
+        upgradeTabButton.classList.toggle('visible', canAffordUpgrade && activeTabId !== 'upgrades');
+    }
+}
+
+
 // Switch between tabs
 function switchTab(tabId) {
     // Hide all tab panes
@@ -341,6 +372,7 @@ function switchTab(tabId) {
     // Activate selected tab button
     document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
 }
+    updateTabBadges(); // Update badges after tab switch
 
 // Render buildings tab
 function renderBuildings() {
@@ -399,6 +431,7 @@ function buyBuilding(buildingId) {
             // Re-render staff and upgrades to update their buy buttons too
             renderStaff();
             renderUpgrades();
+            updateTabBadges();
         } else {
             console.log(`Cannot afford ${building.name}. Cost: $${cost}, Money: ${gameState.money}`);
         }
@@ -458,6 +491,7 @@ function hireStaff(staffId) {
             
             // Re-render buildings and upgrades to update their buy buttons too
             renderBuildings();
+            updateTabBadges();
             renderUpgrades();
         } else {
             console.log(`Cannot afford ${staff.name}. Cost: $${cost}, Money: ${gameState.money}`);
@@ -486,6 +520,7 @@ function renderUpgrades() {
             
             upgradeList.appendChild(upgradeElement);
             
+            updateTabBadges();
             // Add event listener to buy button
             const buyButton = upgradeElement.querySelector('.buy-button');
             buyButton.addEventListener('click', () => {
