@@ -18,6 +18,8 @@ const gameState = {
     clickCooldown: false // Add cooldown to prevent rapid clicking issues
 };
 
+let saveCounter = 0; // Counter for periodic saving
+
 // Building definitions
 const buildingDefinitions = [
     {
@@ -135,19 +137,24 @@ const upgradeDefinitions = [
 
 // Initialize game
 function initGame() {
-    // Initialize buildings
-    gameState.buildings = [...buildingDefinitions];
+    // Initialize default state from definitions (use deep copy)
+    gameState.buildings = JSON.parse(JSON.stringify(buildingDefinitions)); 
+    gameState.staff = JSON.parse(JSON.stringify(staffDefinitions));
+    gameState.upgrades = JSON.parse(JSON.stringify(upgradeDefinitions));
     
-    // Initialize staff
-    gameState.staff = [...staffDefinitions];
-    
-    // Initialize upgrades
-    gameState.upgrades = [...upgradeDefinitions];
-    
+    // Attempt to load saved game state
+    const loaded = loadGame(); // loadGame now returns true if loaded
+
+    // Render initial UI based on loaded or default state
+    updateResourceDisplay();
+    renderBuildings();
+    renderStaff();
+    renderUpgrades();
+    updateButtonStates(); 
+    updateTabBadges(); 
+
     // Set up event listeners
     document.getElementById('main-clicker').addEventListener('click', handleMainClick);
-    
-    // Set up tab switching
     const tabButtons = document.querySelectorAll('.tab-button');
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -155,20 +162,23 @@ function initGame() {
             switchTab(tabId);
         });
     });
-    
-    // Render initial game state
-    renderBuildings();
-    renderStaff();
-    renderUpgrades();
-    updateResourceDisplay();
-    
+    const resetButton = document.getElementById('reset-progress-button');
+    if (resetButton) {
+        resetButton.addEventListener('click', resetProgress);
+    } else {
+        console.error('Reset button not found!');
+    }
+
     // Start game loop
     setInterval(gameLoop, 1000);
     
-    // Welcome notification
-    addNotification('Welcome to Airport Clicker! Click "Operate Flight" to start earning money.', 'info');
+    // Welcome / Load notification
+    if (!loaded) {
+        addNotification('Welcome to Airport Clicker! Click "Operate Flight" to start earning money.', 'info');
+    } else {
+        addNotification('Game progress loaded.', 'info');
+    }
 }
-    updateTabBadges(); // Initial badge check
 
 // Main click handler
 function handleMainClick() {
@@ -308,6 +318,12 @@ function gameLoop() {
     // Update passive income rates for display
     gameState.moneyPerSecond = moneyPerSecond;
     gameState.passengersPerSecond = passengersPerSecond;
+    // Periodic save
+    saveCounter++;
+    if (saveCounter >= 15) {
+        saveGame();
+        saveCounter = 0;
+    }
     updateTabBadges();
 }
 
@@ -475,6 +491,7 @@ function buyBuilding(buildingId) {
             renderStaff();
             renderUpgrades();
             updateTabBadges();
+            saveGame(); // Save after purchase
         } else {
             console.log(`Cannot afford ${building.name}. Cost: $${cost}, Money: ${gameState.money}`);
         }
@@ -535,6 +552,7 @@ function hireStaff(staffId) {
             // Re-render buildings and upgrades to update their buy buttons too
             renderBuildings();
             updateTabBadges();
+            saveGame(); // Save after hire
             renderUpgrades();
         } else {
             console.log(`Cannot afford ${staff.name}. Cost: $${cost}, Money: ${gameState.money}`);
@@ -597,6 +615,7 @@ function purchaseUpgrade(upgradeId) {
             // Re-render buildings and staff to update their buy buttons too
             renderBuildings();
             renderStaff();
+            saveGame(); // Save after upgrade
         } else {
             console.log(`Cannot afford upgrade ${upgrade.name}. Cost: $${upgrade.cost}, Money: ${gameState.money}`);
         }
@@ -619,6 +638,87 @@ function addNotification(message, type = 'info') {
         notifications[notifications.length - 1].remove();
     }
 }
+
+// Load game state from localStorage
+function loadGame() {
+    try {
+        const savedStateJSON = localStorage.getItem('airportClickerSave');
+        if (savedStateJSON) {
+            const loadedState = JSON.parse(savedStateJSON);
+            for (const key in loadedState) {
+                if (gameState.hasOwnProperty(key)) {
+                    if (Array.isArray(gameState[key]) && Array.isArray(loadedState[key])) {
+                        gameState[key].forEach(defaultItem => {
+                            const loadedItem = loadedState[key].find(item => item.id === defaultItem.id);
+                            if (loadedItem) {
+                                if (loadedItem.hasOwnProperty('owned')) defaultItem.owned = loadedItem.owned;
+                                if (loadedItem.hasOwnProperty('purchased')) defaultItem.purchased = loadedItem.purchased;
+                                if (loadedItem.hasOwnProperty('unlocked') && loadedItem.unlocked) defaultItem.unlocked = true;
+                            }
+                        });
+                    } else {
+                        gameState[key] = loadedState[key];
+                    }
+                }
+            }
+            console.log('Game loaded!');
+            return true; // Indicate that a save was loaded
+        } else {
+            console.log('No save game found.');
+        }
+    } catch (e) {
+        console.error("Failed to load game:", e);
+        localStorage.removeItem('airportClickerSave');
+    }
+    return false; // Indicate no save was loaded
+}
+
+// Save game state to localStorage
+function saveGame() {
+    try {
+        localStorage.setItem('airportClickerSave', JSON.stringify(gameState));
+    } catch (e) {
+        console.error("Failed to save game:", e);
+        addNotification('Error saving game. Storage might be full or disabled.', 'error');
+    }
+}
+
+// Reset game progress
+function resetProgress() {
+    if (confirm("Are you sure you want to reset all progress? This cannot be undone.")) {
+        try {
+            localStorage.removeItem('airportClickerSave');
+            // Reset gameState in memory
+            gameState.money = 0;
+            gameState.passengers = 0;
+            gameState.reputation = 0;
+            gameState.totalFlights = 0;
+            gameState.totalPassengers = 0;
+            gameState.airportLevel = 1;
+            gameState.clickValue = 1;
+            gameState.passengersPerClick = 1;
+            gameState.moneyPerSecond = 0;
+            gameState.passengersPerSecond = 0;
+            gameState.buildings = JSON.parse(JSON.stringify(buildingDefinitions)); 
+            gameState.staff = JSON.parse(JSON.stringify(staffDefinitions));
+            gameState.upgrades = JSON.parse(JSON.stringify(upgradeDefinitions));
+            saveCounter = 0;
+            // Re-render UI
+            updateResourceDisplay();
+            renderBuildings();
+            renderStaff();
+            renderUpgrades();
+            updateButtonStates();
+            updateTabBadges();
+            addNotification('Game progress reset.', 'warning');
+            console.log("Game reset complete.");
+        } catch (e) {
+            console.error("Failed to reset game:", e);
+            addNotification('Error resetting progress.', 'error');
+        }
+    }
+}
+
 
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', initGame);
