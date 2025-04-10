@@ -224,7 +224,7 @@ function handleMainClick() {
     
     updateTabBadges();
     // Debug log
-    console.log("After click - Money:", gameState.money, "Passengers:", gameState.passengers);
+    // console.log("After click - Money:", gameState.money, "Passengers:", gameState.passengers); // Reduce console noise
     
     // Reset cooldown after a short delay
     setTimeout(() => {
@@ -430,8 +430,8 @@ function switchTab(tabId) {
     
     // Activate selected tab button
     document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
-}
     updateTabBadges(); // Update badges after tab switch
+}
 
 // Render buildings tab
 function renderBuildings() {
@@ -464,7 +464,7 @@ function renderBuildings() {
     });
     
     // Debug log
-    console.log("Current money:", gameState.money);
+    // console.log("Current money:", gameState.money); // Reduce console noise
 }
 
 // Buy a building
@@ -481,7 +481,7 @@ function buyBuilding(buildingId) {
             addNotification(`Purchased a ${building.name}`, 'success');
             
             // Debug log
-            console.log(`Purchased ${building.name} for $${cost}. New money: ${gameState.money}`);
+            // console.log(`Purchased ${building.name} for $${cost}. New money: ${gameState.money}`);
             
             // Update display
             updateResourceDisplay();
@@ -493,7 +493,8 @@ function buyBuilding(buildingId) {
             updateTabBadges();
             saveGame(); // Save after purchase
         } else {
-            console.log(`Cannot afford ${building.name}. Cost: $${cost}, Money: ${gameState.money}`);
+            // console.log(`Cannot afford ${building.name}. Cost: $${cost}, Money: ${gameState.money}`);
+            addNotification(`Not enough money for ${building.name}`, 'warning'); // Added user feedback
         }
     }
 }
@@ -543,7 +544,7 @@ function hireStaff(staffId) {
             addNotification(`Hired a ${staff.name}`, 'success');
             
             // Debug log
-            console.log(`Hired ${staff.name} for $${cost}. New money: ${gameState.money}`);
+            // console.log(`Hired ${staff.name} for $${cost}. New money: ${gameState.money}`);
             
             // Update display
             updateResourceDisplay();
@@ -551,74 +552,95 @@ function hireStaff(staffId) {
             
             // Re-render buildings and upgrades to update their buy buttons too
             renderBuildings();
+            renderUpgrades(); // Rerender upgrades too
             updateTabBadges();
             saveGame(); // Save after hire
-            renderUpgrades();
         } else {
-            console.log(`Cannot afford ${staff.name}. Cost: $${cost}, Money: ${gameState.money}`);
+            // console.log(`Cannot afford ${staff.name}. Cost: $${cost}, Money: ${gameState.money}`);
+            addNotification(`Not enough money for ${staff.name}`, 'warning'); // Added user feedback
         }
     }
 }
 
-// Render upgrades tab
+// Render upgrades tab --- MODIFIED --- 
 function renderUpgrades() {
     const upgradeList = document.querySelector('.upgrade-list');
-    upgradeList.innerHTML = '';
-    
+    upgradeList.innerHTML = ''; // Clear existing items
+
     gameState.upgrades.forEach(upgrade => {
-        if (upgrade.unlocked && !upgrade.purchased) {
+        // Display the upgrade if it's unlocked
+        if (upgrade.unlocked) {
             const canAfford = gameState.money >= upgrade.cost;
-            
+            const isPurchased = upgrade.purchased;
+
             const upgradeElement = document.createElement('div');
-            upgradeElement.className = 'upgrade-item';
+            // Add 'purchased' class if the upgrade is bought (for CSS styling)
+            upgradeElement.className = `upgrade-item ${isPurchased ? 'purchased' : ''}`;
+            
             upgradeElement.innerHTML = `
                 <div class="upgrade-name">${upgrade.name}</div>
                 <div class="upgrade-cost">Cost: $${upgrade.cost}</div>
                 <div class="upgrade-description">${upgrade.description}</div>
                 <div class="upgrade-effect">${upgrade.effect}</div>
-                <button class="buy-button" data-upgrade="${upgrade.id}" ${canAfford ? '' : 'disabled'}>Purchase</button>
+                <button class="buy-button" data-upgrade="${upgrade.id}" ${isPurchased || !canAfford ? 'disabled' : ''}>
+                    ${isPurchased ? 'Purchased' : 'Purchase'} 
+                </button> 
             `;
-
-
             
             upgradeList.appendChild(upgradeElement);
-            
-            updateTabBadges();
-            // Add event listener to buy button
-            const buyButton = upgradeElement.querySelector('.buy-button');
-            buyButton.addEventListener('click', () => {
-                purchaseUpgrade(upgrade.id);
-            });
+
+            // Add event listener to the buy button ONLY if not purchased
+            if (!isPurchased) {
+                const buyButton = upgradeElement.querySelector('.buy-button');
+                buyButton.addEventListener('click', () => {
+                    purchaseUpgrade(upgrade.id);
+                });
+            }
         }
     });
+    // Update badges once after rendering all upgrades
+    // updateTabBadges(); // Removed: This is called in main click/game loop anyway 
 }
+// --- END MODIFIED renderUpgrades ---
 
 // Purchase an upgrade
 function purchaseUpgrade(upgradeId) {
     const upgrade = gameState.upgrades.find(u => u.id === upgradeId);
     
-    if (upgrade && !upgrade.purchased) {
+    // Make sure upgrade exists and is not already purchased
+    if (upgrade && !upgrade.purchased) { 
         if (gameState.money >= upgrade.cost) {
             gameState.money -= upgrade.cost;
             upgrade.purchased = true;
             
             // Apply upgrade effect
-            upgrade.applyUpgrade();
+            if (typeof upgrade.applyUpgrade === 'function') {
+                 upgrade.applyUpgrade();
+            } else {
+                console.warn(`Upgrade ${upgrade.id} has no applyUpgrade function.`);
+            }
             
             // Debug log
-            console.log(`Purchased upgrade ${upgrade.name} for $${upgrade.cost}. New money: ${gameState.money}`);
+            // console.log(`Purchased upgrade ${upgrade.name} for $${upgrade.cost}. New money: ${gameState.money}`);
             
-            // Update display
+            // Update display - Rerender upgrades to show purchased state
             updateResourceDisplay();
-            renderUpgrades();
+            renderUpgrades(); 
             
-            // Re-render buildings and staff to update their buy buttons too
+            // Re-render buildings and staff potentially affected by upgrade or button states
             renderBuildings();
             renderStaff();
+            updateButtonStates(); // Explicitly update all button states
+            updateTabBadges(); // Update badges as affordability might change
             saveGame(); // Save after upgrade
         } else {
-            console.log(`Cannot afford upgrade ${upgrade.name}. Cost: $${upgrade.cost}, Money: ${gameState.money}`);
+            // console.log(`Cannot afford upgrade ${upgrade.name}. Cost: $${upgrade.cost}, Money: ${gameState.money}`);
+             addNotification(`Not enough money for ${upgrade.name}`, 'warning'); // Added user feedback
         }
+    } else if (upgrade && upgrade.purchased) {
+        // console.log(`Upgrade ${upgrade.name} already purchased.`); // Optional feedback
+    } else {
+        console.error(`Upgrade with ID ${upgradeId} not found.`);
     }
 }
 
@@ -630,11 +652,12 @@ function addNotification(message, type = 'info') {
     notification.className = `notification ${type}`;
     notification.textContent = message;
     
-    notificationList.prepend(notification);
+    // Make newer notifications appear at the top
+    notificationList.prepend(notification); 
     
-    // Limit to 10 notifications
+    // Limit to a reasonable number (e.g., 10) notifications
     const notifications = notificationList.querySelectorAll('.notification');
-    if (notifications.length > 10) {
+    if (notifications.length > 10) { 
         notifications[notifications.length - 1].remove();
     }
 }
@@ -645,22 +668,38 @@ function loadGame() {
         const savedStateJSON = localStorage.getItem('airportClickerSave');
         if (savedStateJSON) {
             const loadedState = JSON.parse(savedStateJSON);
-            for (const key in loadedState) {
-                if (gameState.hasOwnProperty(key)) {
-                    if (Array.isArray(gameState[key]) && Array.isArray(loadedState[key])) {
-                        gameState[key].forEach(defaultItem => {
-                            const loadedItem = loadedState[key].find(item => item.id === defaultItem.id);
-                            if (loadedItem) {
-                                if (loadedItem.hasOwnProperty('owned')) defaultItem.owned = loadedItem.owned;
-                                if (loadedItem.hasOwnProperty('purchased')) defaultItem.purchased = loadedItem.purchased;
-                                if (loadedItem.hasOwnProperty('unlocked') && loadedItem.unlocked) defaultItem.unlocked = true;
-                            }
-                        });
-                    } else {
-                        gameState[key] = loadedState[key];
-                    }
+            
+            // Carefully merge loaded state into default gameState structure
+            // This prevents issues if new properties are added later
+
+            // Basic properties
+            const basicProps = ['money', 'passengers', 'reputation', 'totalFlights', 'totalPassengers', 'airportLevel', 'clickValue', 'passengersPerClick', 'moneyPerSecond', 'passengersPerSecond'];
+            basicProps.forEach(prop => {
+                if (loadedState.hasOwnProperty(prop) && typeof loadedState[prop] === typeof gameState[prop]) {
+                    gameState[prop] = loadedState[prop];
                 }
-            }
+            });
+
+            // Merge arrays (Buildings, Staff, Upgrades)
+            ['buildings', 'staff', 'upgrades'].forEach(key => {
+                if (Array.isArray(loadedState[key])) {
+                    // Ensure default definitions exist before attempting merge
+                    if (!Array.isArray(gameState[key])) {
+                         console.warn(`gameState.${key} is not an array during load, skipping merge for this key.`);
+                         return; 
+                    }
+                    gameState[key].forEach(defaultItem => {
+                        const loadedItem = loadedState[key].find(item => item.id === defaultItem.id);
+                        if (loadedItem) {
+                            // Copy saved properties if they exist in the loaded data and the default item
+                            if (defaultItem.hasOwnProperty('owned') && loadedItem.hasOwnProperty('owned')) defaultItem.owned = loadedItem.owned;
+                            if (defaultItem.hasOwnProperty('purchased') && loadedItem.hasOwnProperty('purchased')) defaultItem.purchased = loadedItem.purchased;
+                            if (defaultItem.hasOwnProperty('unlocked') && loadedItem.hasOwnProperty('unlocked')) defaultItem.unlocked = loadedItem.unlocked;
+                        } // Keep default if not found in save
+                    });
+                }
+            });
+
             console.log('Game loaded!');
             return true; // Indicate that a save was loaded
         } else {
@@ -668,15 +707,35 @@ function loadGame() {
         }
     } catch (e) {
         console.error("Failed to load game:", e);
-        localStorage.removeItem('airportClickerSave');
+        // If loading fails, clear potentially corrupted save and start fresh
+        localStorage.removeItem('airportClickerSave'); 
+        addNotification('Error loading save game. Starting fresh.', 'error');
     }
-    return false; // Indicate no save was loaded
+    return false; // Indicate no save was loaded or load failed
 }
 
 // Save game state to localStorage
 function saveGame() {
+     // Create a slimmed-down version of gameState for saving
+    const stateToSave = {
+        money: gameState.money,
+        passengers: gameState.passengers,
+        reputation: gameState.reputation,
+        totalFlights: gameState.totalFlights,
+        totalPassengers: gameState.totalPassengers,
+        airportLevel: gameState.airportLevel,
+        clickValue: gameState.clickValue,
+        passengersPerClick: gameState.passengersPerClick,
+        // We don't strictly need to save money/passengers per second, they get recalculated
+        // Only save essential data for items that change
+        buildings: gameState.buildings.map(b => ({ id: b.id, owned: b.owned, unlocked: b.unlocked })),
+        staff: gameState.staff.map(s => ({ id: s.id, owned: s.owned, unlocked: s.unlocked })),
+        upgrades: gameState.upgrades.map(u => ({ id: u.id, purchased: u.purchased, unlocked: u.unlocked }))
+    };
+    
     try {
-        localStorage.setItem('airportClickerSave', JSON.stringify(gameState));
+        localStorage.setItem('airportClickerSave', JSON.stringify(stateToSave));
+        // console.log('Game saved.'); // Reduce console noise
     } catch (e) {
         console.error("Failed to save game:", e);
         addNotification('Error saving game. Storage might be full or disabled.', 'error');
@@ -688,7 +747,9 @@ function resetProgress() {
     if (confirm("Are you sure you want to reset all progress? This cannot be undone.")) {
         try {
             localStorage.removeItem('airportClickerSave');
-            // Reset gameState in memory
+            
+            // Reset gameState in memory to initial defaults
+            // Re-initialize from definitions to ensure consistency
             gameState.money = 0;
             gameState.passengers = 0;
             gameState.reputation = 0;
@@ -699,17 +760,21 @@ function resetProgress() {
             gameState.passengersPerClick = 1;
             gameState.moneyPerSecond = 0;
             gameState.passengersPerSecond = 0;
+            // Deep copy from original definitions again
             gameState.buildings = JSON.parse(JSON.stringify(buildingDefinitions)); 
             gameState.staff = JSON.parse(JSON.stringify(staffDefinitions));
             gameState.upgrades = JSON.parse(JSON.stringify(upgradeDefinitions));
-            saveCounter = 0;
-            // Re-render UI
+            saveCounter = 0; // Reset save counter
+            
+            // Re-render the entire UI
             updateResourceDisplay();
             renderBuildings();
             renderStaff();
             renderUpgrades();
             updateButtonStates();
             updateTabBadges();
+            // Clear notifications
+            document.getElementById('notification-list').innerHTML = ''; 
             addNotification('Game progress reset.', 'warning');
             console.log("Game reset complete.");
         } catch (e) {
