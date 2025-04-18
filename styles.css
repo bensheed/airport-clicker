@@ -1,80 +1,3 @@
-# Read the file content
-current_content_response = default_api.read_file(path="game.js")
-if current_content_response['read_file_response']['status'] != 'succeeded':
-    print("Error reading game.js again.")
-else:
-    current_content = current_content_response['read_file_response']['result']
-    
-    # Define the unique start and end markers of the Python block
-    # Using markers that are less likely to appear elsewhere
-    python_start_marker = "# Read the current content of game.js\\ngame_js_content = default_api.read_file"
-    python_end_marker = "print(\\\"Error: Could not find the upgradeDefinitions array in game.js\\\")" # The last line of the python code
-
-    start_index = current_content.find(python_start_marker)
-    end_index = current_content.find(python_end_marker)
-
-    if start_index != -1 and end_index != -1 and end_index > start_index:
-        # Find the beginning of the line where the start marker is (actually the line before it)
-        # Look for the end of the previous correct JS line
-        js_line_before_start = "totalPassengers: 0,"
-        start_js_index = current_content.find(js_line_before_start)
-        
-        if start_js_index != -1:
-             line_start_index = start_js_index + len(js_line_before_start)
-             # Ensure we capture the newline right after the JS line to start the removal
-             if current_content[line_start_index] == '\\n':
-                  line_start_index += 1
-             elif current_content[line_start_index:line_start_index+2] == '\\r\\n': # Handle Windows line endings
-                  line_start_index += 2
-        else:
-             # Fallback if the exact JS line isn't found (shouldn't happen here)
-             line_start_index = current_content.rfind('\\n', 0, start_index)
-             if line_start_index == -1:
-                 line_start_index = 0
-             else:
-                 line_start_index += 1
-        
-
-        # Find the end of the line where the end marker is
-        line_end_index = current_content.find('\\n', end_index)
-        if line_end_index == -1:
-             line_end_index = len(current_content) # Marker might be on the last line
-        else:
-             # Check if the next line is the correct JS line
-             js_line_after_end = "    airportLevel: 1,"
-             next_line_start = line_end_index + 1
-             if current_content.startswith(js_line_after_end, next_line_start):
-                 line_end_index = next_line_start # Set end index to start of the next correct line
-             else:
-                 # If the next line isn't what we expect, just remove up to the end marker's line end
-                 line_end_index += 1
-
-
-        # Construct the corrected code
-        part1 = current_content[:line_start_index] # Code before the bad block lines
-        part2 = current_content[line_end_index:]   # Code after the bad block lines
-
-        # Ensure part1 ends with a newline if it doesn't already, and part2 doesn't start with one redundantly
-        if not part1.endswith('\\n') and not part1.endswith('\\r'):
-             part1 += '\\n' # Add a newline if missing
-        
-        # Remove leading whitespace/newlines from part2 if part1 added a newline
-        part2 = part2.lstrip('\\n\\r')
-
-
-        corrected_content = part1 + part2 
-        
-        # Final verification
-        if "renderUpgrades()" in corrected_content and "upgradeDefinitions = [" in corrected_content and "airportLevel: 1," in corrected_content and python_start_marker not in corrected_content:
-             print("Attempting to write corrected game.js...")
-             print(default_api.write_file(content=corrected_content, path="game.js"))
-        else:
-              print("Error: Corrected content seems invalid after removal attempt or markers still present. Aborting write.")
-              #print(f"Debug Info: Part 1 ends with: {repr(part1[-20:])}") # Keep it concise
-              #print(f"Debug Info: Part 2 starts with: {repr(part2[:20])}")
-
-    else:
-        print(f"Error: Could not locate the Python code markers in game.js. Start index: {start_index}, End index: {end_index}")
 * {
     box-sizing: border-box;
     margin: 0;
@@ -406,3 +329,19 @@ footer {
     transform: none;
 }
 /* ---- End purchased upgrade styles ---- */
+
+/* Locked item styling */
+.building-item.locked,
+.staff-item.locked,
+.upgrade-item.locked {
+    opacity: 0.6;
+    border-left: 3px solid #ccc; /* Add a visual cue */
+}
+
+.building-item.locked .building-name span,
+.staff-item.locked .staff-name span,
+.upgrade-item.locked .upgrade-name span {
+    font-size: 0.8em;
+    color: #666;
+    margin-left: 5px;
+}

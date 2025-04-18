@@ -9,7 +9,8 @@ import {
     updateButtonStates, 
     updateTabBadges, 
     switchTab, 
-    addNotification 
+    addNotification, 
+    renderLevelUnlocks // Added import
 } from './js/modules/ui.js';
 import { handleMainClick, gameLoop } from './js/modules/gameLogic.js';
 
@@ -30,11 +31,14 @@ function initGame() {
     renderStaff();
     renderUpgrades();
     updateButtonStates(); 
+    renderLevelUnlocks();
     updateTabBadges(); 
 
     // Set up event listeners
+    console.log('Setting up event listeners...');
     const mainClicker = document.getElementById('main-clicker');
     if (mainClicker) {
+        console.log('Attaching listener to main-clicker');
         mainClicker.addEventListener('click', handleMainClick);
     } else {
         console.error('Main clicker button not found!');
@@ -42,6 +46,7 @@ function initGame() {
 
     const tabButtons = document.querySelectorAll('.tab-button');
     tabButtons.forEach(button => {
+        console.log(`Attaching listener to tab button for: ${button.getAttribute('data-tab')}`);
         button.addEventListener('click', () => {
             const tabId = button.getAttribute('data-tab');
             if (tabId) {
