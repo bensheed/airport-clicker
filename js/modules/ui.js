@@ -10,6 +10,8 @@ export function updateResourceDisplay() {
     const totalFlightsEl = document.getElementById('total-flights');
     const totalPassengersEl = document.getElementById('total-passengers');
     const airportLevelEl = document.getElementById('airport-level');
+    const levelProgressBar = document.getElementById('level-progress-bar');
+    const levelProgressText = document.getElementById('level-progress-text');
 
     if (moneyEl) moneyEl.textContent = gameState.money.toFixed(1);
     if (passengersEl) passengersEl.textContent = gameState.passengers.toFixed(0);
@@ -17,6 +19,15 @@ export function updateResourceDisplay() {
     if (totalFlightsEl) totalFlightsEl.textContent = gameState.totalFlights;
     if (totalPassengersEl) totalPassengersEl.textContent = gameState.totalPassengers.toFixed(0);
     if (airportLevelEl) airportLevelEl.textContent = gameState.airportLevel;
+
+    // Update Level Progress Bar
+    if (levelProgressBar && levelProgressText) {
+        const currentLevelRep = gameState.reputation % 10;
+        const repNeeded = 10;
+        levelProgressBar.value = currentLevelRep;
+        levelProgressBar.max = repNeeded;
+        levelProgressText.textContent = `${currentLevelRep}/${repNeeded} Rep`;
+    }
 }
 
 // Render buildings tab content
