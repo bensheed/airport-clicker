@@ -11,7 +11,7 @@ import {
     updateTabBadges
 } from './ui.js';
 
-// Main click handler
+// Main click handler - "Operate Flight"
 export function handleMainClick() {
     // Prevent rapid clicking
     if (gameState.clickCooldown) return;
@@ -19,45 +19,52 @@ export function handleMainClick() {
     // Set cooldown
     gameState.clickCooldown = true;
     
-    // Calculate click value with multipliers
-    let moneyEarned = gameState.clickValue;
-    let passengersGained = gameState.passengersPerClick;
-    
-    // Apply staff multipliers
+    // --- Calculate Money Earned --- 
+    let moneyEarned = gameState.baseClickValue;
+
+    // 1. Apply Runway Boosts (additive to base value)
+    const runways = gameState.buildings.find(b => b.id === 'runway');
+    const numRunways = runways ? runways.owned : 0;
+    if (numRunways > 0) {
+        const runwayBoostPerRunway = runways.moneyPerClickBoost || 0;
+        
+        // 2. Apply Control Tower Efficiency Boost (multiplicative to runway boost)
+        const controlTowers = gameState.buildings.find(b => b.id === 'control-tower');
+        const numTowers = controlTowers ? controlTowers.owned : 0;
+        const towerEfficiencyMultiplier = 1 + (numTowers * (controlTowers?.runwayEfficiencyBoost || 0));
+        
+        moneyEarned += gameState.baseClickValue * (numRunways * runwayBoostPerRunway * towerEfficiencyMultiplier);
+    }
+
+    // 3. Apply Pilot Bonuses (multiplicative)
+    let pilotMultiplier = 1;
     gameState.staff.forEach(staff => {
-        if (staff.owned > 0) {
-            // Ensure clickMultiplier is defined and is a number
-            if (typeof staff.clickMultiplier === 'number') {
-                 moneyEarned *= Math.pow(staff.clickMultiplier, staff.owned);
-            } else {
-                console.warn(`Staff ${staff.id} has invalid clickMultiplier: ${staff.clickMultiplier}`);
-            }
+        if (staff.id === 'pilot' && staff.owned > 0) {
+            pilotMultiplier *= Math.pow(1 + (staff.moneyPerClickBonus || 0), staff.owned);
         }
     });
-    
-    // Update game state
+    moneyEarned *= pilotMultiplier;
+
+    // 4. Apply Global Click Multiplier Upgrades (e.g., Better Seats)
+    moneyEarned *= (gameState.moneyPerClickMultiplier || 1);
+
+    // --- Update Game State --- 
     gameState.money += moneyEarned;
-    gameState.passengers += passengersGained;
     gameState.totalFlights += 1;
-    gameState.totalPassengers += passengersGained;
+    // Passengers are no longer gained directly from clicks
+    // gameState.passengers += passengersGained; 
+    // gameState.totalPassengers += passengersGained;
     
-    // Update reputation based on passengers (1 reputation per 100 passengers)
+    // Update reputation based on total passengers (still updated passively)
     gameState.reputation = Math.floor(gameState.totalPassengers / 100);
     
-    // Update display
+    // --- Update UI --- 
     updateResourceDisplay();
-    
-    // Show click feedback
-    showClickFeedback(`+$${moneyEarned.toFixed(1)}, +${passengersGained} passengers`);
-    
-    // Check for level up
+    showClickFeedback(`+$${moneyEarned.toFixed(1)}`); // Only show money feedback
     checkLevelUp();
     
-    // Re-render buildings, staff, and upgrades to update buy buttons
-    // Note: Re-rendering everything on every click might be inefficient later
-    renderBuildings();
-    renderStaff();
-    renderUpgrades();
+    // Update button states as money changed
+    updateButtonStates(); 
     updateTabBadges();
     
     // Reset cooldown after a short delay
@@ -68,34 +75,53 @@ export function handleMainClick() {
 
 // Game loop (runs every second)
 export function gameLoop() {
-    // Calculate passive income
+    // --- Calculate Passive Passenger Arrival --- 
+    // Base arrival rate could be 0 or a small constant
+    let basePassengerArrival = 0.1; 
+    // Arrival rate increases with reputation (e.g., +0.1 passengers/sec per 10 reputation)
+    let reputationBonus = Math.max(0, gameState.reputation) * 0.01; // Simple linear scaling for now
+    let passengersPerSecond = basePassengerArrival + reputationBonus;
+
+    // --- Calculate Passive Income --- 
     let moneyPerSecond = 0;
-    let passengersPerSecond = 0;
-    
-    // Add income from buildings
+    // 1. Income from buildings (Terminals, Parking Garages)
     gameState.buildings.forEach(building => {
-        moneyPerSecond += (building.moneyPerSecond || 0) * building.owned;
-        passengersPerSecond += (building.passengersPerSecond || 0) * building.owned;
+        if (building.moneyPerSecondBase && building.owned > 0) {
+            // Scale base income by reputation (e.g., 1 + reputation/100)
+            let reputationMultiplier = 1 + (Math.max(0, gameState.reputation) / 100);
+            moneyPerSecond += building.moneyPerSecondBase * building.owned * reputationMultiplier;
+        }
     });
-    
-    // Update game state
+
+    // 2. Apply Staff Bonuses (Attendants, Mechanics)
+    let staffPassiveMultiplier = 1;
+    gameState.staff.forEach(staff => {
+        if (staff.passiveIncomeBonus && staff.owned > 0) {
+            staffPassiveMultiplier *= Math.pow(1 + staff.passiveIncomeBonus, staff.owned);
+        }
+    });
+    moneyPerSecond *= staffPassiveMultiplier;
+
+    // 3. Apply Global Passive Income Multiplier Upgrades (e.g., Faster Check-in)
+    moneyPerSecond *= (gameState.passiveIncomeMultiplier || 1);
+
+    // --- Update Game State --- 
     gameState.money += moneyPerSecond;
     gameState.passengers += passengersPerSecond;
     gameState.totalPassengers += passengersPerSecond;
     
-    // Update reputation based on passengers
+    // Update reputation based on total passengers
     gameState.reputation = Math.floor(gameState.totalPassengers / 100);
     
-    // Update display
-    updateResourceDisplay();
-    updateButtonStates(); // Update button states based on new money
-    
-    // Check for level up
-    checkLevelUp();
-    
-    // Update passive income rates in gameState for display purposes
+    // Update calculated rates in gameState for display purposes
     gameState.moneyPerSecond = moneyPerSecond;
     gameState.passengersPerSecond = passengersPerSecond;
+
+    // --- Update UI & Save --- 
+    updateResourceDisplay();
+    updateButtonStates(); // Update button states based on new money
+    checkLevelUp();
+    updateTabBadges();
     
     // Periodic save
     incrementSaveCounter();
@@ -103,7 +129,6 @@ export function gameLoop() {
         saveGame();
         resetSaveCounter();
     }
-    updateTabBadges();
 }
 
 // Check if airport level should increase

@@ -10,6 +10,9 @@ export function updateResourceDisplay() {
     const totalFlightsEl = document.getElementById('total-flights');
     const totalPassengersEl = document.getElementById('total-passengers');
     const airportLevelEl = document.getElementById('airport-level');
+    // Add elements for per-second displays if they exist in HTML
+    const moneyPerSecEl = document.getElementById('money-per-second'); 
+    const passengersPerSecEl = document.getElementById('passengers-per-second');
 
     if (moneyEl) moneyEl.textContent = gameState.money.toFixed(1);
     if (passengersEl) passengersEl.textContent = gameState.passengers.toFixed(0);
@@ -17,6 +20,9 @@ export function updateResourceDisplay() {
     if (totalFlightsEl) totalFlightsEl.textContent = gameState.totalFlights;
     if (totalPassengersEl) totalPassengersEl.textContent = gameState.totalPassengers.toFixed(0);
     if (airportLevelEl) airportLevelEl.textContent = gameState.airportLevel;
+    // Update per-second displays
+    if (moneyPerSecEl) moneyPerSecEl.textContent = gameState.moneyPerSecond.toFixed(1);
+    if (passengersPerSecEl) passengersPerSecEl.textContent = gameState.passengersPerSecond.toFixed(1);
 }
 
 // Render buildings tab content
@@ -30,13 +36,25 @@ export function renderBuildings() {
             const buildingCost = Math.floor(building.baseCost * Math.pow(1.15, building.owned));
             const canAfford = gameState.money >= buildingCost;
 
+            let productionHtml = '';
+            if (building.moneyPerClickBoost) {
+                productionHtml = `<div class="building-production">Effect: +${(building.moneyPerClickBoost * 100).toFixed(0)}% Base Flight Revenue</div>`;
+            } else if (building.moneyPerSecondBase) {
+                // Show base rate, actual rate depends on reputation/multipliers
+                productionHtml = `<div class="building-production">Base Income: $${building.moneyPerSecondBase.toFixed(1)}/s (scales with Rep)</div>`;
+            } else if (building.runwayEfficiencyBoost) {
+                 productionHtml = `<div class="building-production">Effect: +${(building.runwayEfficiencyBoost * 100).toFixed(0)}% Runway Efficiency</div>`;
+            } else {
+                 productionHtml = `<div class="building-production">Effect: See Description</div>`; // Hangar etc.
+            }
+
             const buildingElement = document.createElement('div');
             buildingElement.className = 'building-item';
             buildingElement.innerHTML = `
                 <div class="building-name">${building.name} (${building.owned})</div>
                 <div class="building-cost">Cost: $${buildingCost}</div>
                 <div class="building-description">${building.description}</div>
-                <div class="building-production">Produces: $${building.moneyPerSecond}/s, ${building.passengersPerSecond} passengers/s</div>
+                ${productionHtml}
                 <button class="buy-button" data-building="${building.id}" ${canAfford ? '' : 'disabled'}>Buy</button>
             `;
 
@@ -64,13 +82,20 @@ export function renderStaff() {
             const staffCost = Math.floor(staff.baseCost * Math.pow(1.2, staff.owned));
             const canAfford = gameState.money >= staffCost;
 
+            let bonusHtml = '';
+            if (staff.moneyPerClickBonus) {
+                bonusHtml = `<div class="staff-bonus">Effect: +${(staff.moneyPerClickBonus * 100).toFixed(0)}% Flight Revenue per ${staff.name}</div>`;
+            } else if (staff.passiveIncomeBonus) {
+                bonusHtml = `<div class="staff-bonus">Effect: +${(staff.passiveIncomeBonus * 100).toFixed(0)}% Passive Income per ${staff.name}</div>`;
+            }
+
             const staffElement = document.createElement('div');
             staffElement.className = 'staff-item';
             staffElement.innerHTML = `
                 <div class="staff-name">${staff.name} (${staff.owned})</div>
                 <div class="staff-cost">Cost: $${staffCost}</div>
                 <div class="staff-description">${staff.description}</div>
-                <div class="staff-bonus">Click Bonus: ${((staff.clickMultiplier - 1) * 100).toFixed(0)}% per ${staff.name}</div>
+                ${bonusHtml}
                 <button class="buy-button" data-staff="${staff.id}" ${canAfford ? '' : 'disabled'}>Hire</button>
             `;
 

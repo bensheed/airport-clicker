@@ -5,19 +5,23 @@ import { addNotification, updateResourceDisplay, renderBuildings, renderStaff, r
 // Game state
 export const gameState = {
     money: 0,
-    passengers: 0,
-    reputation: 0,
+    passengers: 0, // Current passengers at the airport
+    reputation: 0, // Influences passive passenger arrival and income
     totalFlights: 0,
-    totalPassengers: 0,
+    totalPassengers: 0, // Cumulative passengers served
     airportLevel: 1,
-    clickValue: 1,
-    passengersPerClick: 1,
-    moneyPerSecond: 0,
-    passengersPerSecond: 0,
+    baseClickValue: 10, // Base money earned per "Operate Flight" click
+    // clickValue: 1, // Replaced by calculated value
+    // passengersPerClick: 1, // Removed - passengers arrive passively
+    moneyPerSecond: 0, // Calculated passive income
+    passengersPerSecond: 0, // Calculated passive passenger arrival rate
     buildings: [], // Will be initialized from definitions
     staff: [],     // Will be initialized from definitions
     upgrades: [],   // Will be initialized from definitions
-    clickCooldown: false
+    clickCooldown: false,
+    // Multipliers from upgrades
+    moneyPerClickMultiplier: 1, 
+    passiveIncomeMultiplier: 1,
 };
 
 // Counter for periodic saving
@@ -40,8 +44,13 @@ export function loadGame() {
             const loadedState = JSON.parse(savedStateJSON);
 
             // Carefully merge loaded state into default gameState structure
-            // Basic properties
-            const basicProps = ['money', 'passengers', 'reputation', 'totalFlights', 'totalPassengers', 'airportLevel', 'clickValue', 'passengersPerClick', 'moneyPerSecond', 'passengersPerSecond'];
+            // Basic properties to load
+            const basicProps = [
+                'money', 'passengers', 'reputation', 'totalFlights', 'totalPassengers', 
+                'airportLevel', 'baseClickValue', 
+                'moneyPerClickMultiplier', 'passiveIncomeMultiplier' // Load new multipliers
+                // Removed: 'clickValue', 'passengersPerClick', 'moneyPerSecond', 'passengersPerSecond' (these are calculated)
+            ];
             basicProps.forEach(prop => {
                 if (loadedState.hasOwnProperty(prop) && typeof loadedState[prop] === typeof gameState[prop]) {
                     gameState[prop] = loadedState[prop];
@@ -84,7 +93,7 @@ export function loadGame() {
 
 // Save game state to localStorage
 export function saveGame() {
-     // Create a slimmed-down version of gameState for saving
+    // Create a slimmed-down version of gameState for saving
     const stateToSave = {
         money: gameState.money,
         passengers: gameState.passengers,
@@ -92,8 +101,10 @@ export function saveGame() {
         totalFlights: gameState.totalFlights,
         totalPassengers: gameState.totalPassengers,
         airportLevel: gameState.airportLevel,
-        clickValue: gameState.clickValue,
-        passengersPerClick: gameState.passengersPerClick,
+        baseClickValue: gameState.baseClickValue, // Save base click value
+        moneyPerClickMultiplier: gameState.moneyPerClickMultiplier, // Save multipliers
+        passiveIncomeMultiplier: gameState.passiveIncomeMultiplier,
+        // Removed: clickValue, passengersPerClick (calculated or obsolete)
         // Only save essential data for items that change
         buildings: gameState.buildings.map(b => ({ id: b.id, owned: b.owned, unlocked: b.unlocked })),
         staff: gameState.staff.map(s => ({ id: s.id, owned: s.owned, unlocked: s.unlocked })),
@@ -122,10 +133,13 @@ export function resetProgress() {
             gameState.totalFlights = 0;
             gameState.totalPassengers = 0;
             gameState.airportLevel = 1;
-            gameState.clickValue = 1;
-            gameState.passengersPerClick = 1;
+            gameState.baseClickValue = 10; // Reset base click value
+            // gameState.clickValue = 1; // Removed
+            // gameState.passengersPerClick = 1; // Removed
             gameState.moneyPerSecond = 0;
             gameState.passengersPerSecond = 0;
+            gameState.moneyPerClickMultiplier = 1; // Reset multipliers
+            gameState.passiveIncomeMultiplier = 1;
             // Deep copy from original definitions again
             gameState.buildings = JSON.parse(JSON.stringify(buildingDefinitions)); // Needs definitions.js
             gameState.staff = JSON.parse(JSON.stringify(staffDefinitions));       // Needs definitions.js

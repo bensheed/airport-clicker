@@ -7,52 +7,54 @@ export const buildingDefinitions = [
     {
         id: 'runway',
         name: 'Runway',
-        description: 'Allows planes to land and take off',
-        baseCost: 10,
-        moneyPerSecond: 0.5,
-        passengersPerSecond: 0.2,
+        description: 'Essential for flight operations. Each runway slightly increases money earned per flight.',
+        baseCost: 150, // Increased cost
+        // moneyPerSecond: 0, // Removed passive income
+        // passengersPerSecond: 0, // Removed passive passengers
+        moneyPerClickBoost: 0.1, // New: Each runway adds 10% to base click value
         owned: 0,
         unlocked: true
     },
     {
         id: 'terminal',
         name: 'Terminal',
-        description: 'Processes passengers and provides shopping',
-        baseCost: 50,
-        moneyPerSecond: 2,
-        passengersPerSecond: 1,
+        description: 'Processes passengers and generates passive income from concessions. Income scales with Reputation.',
+        baseCost: 250, // Increased cost
+        moneyPerSecondBase: 1.5, // Base passive income
+        // passengersPerSecond: 0, // Removed passive passengers
         owned: 0,
         unlocked: true
     },
     {
         id: 'hangar',
         name: 'Hangar',
-        description: 'Stores and maintains aircraft',
-        baseCost: 200,
-        moneyPerSecond: 5,
-        passengersPerSecond: 0.5,
+        description: 'Stores and maintains aircraft. May reduce operational costs or enable advanced features later.',
+        baseCost: 600, // Increased cost
+        // moneyPerSecond: 0, // Removed passive income
+        // passengersPerSecond: 0, // Removed passive passengers
         owned: 0,
-        unlocked: true
+        unlocked: true // Keep unlocked initially? Or unlock later? Let's keep unlocked for now.
     },
     {
         id: 'control-tower',
         name: 'Control Tower',
-        description: 'Manages air traffic',
-        baseCost: 1000,
-        moneyPerSecond: 15,
-        passengersPerSecond: 3,
+        description: 'Manages air traffic, increasing the efficiency (money earned) of each runway.',
+        baseCost: 3000, // Increased cost
+        // moneyPerSecond: 0, // Removed passive income
+        // passengersPerSecond: 0, // Removed passive passengers
+        runwayEfficiencyBoost: 0.15, // New: Each tower adds 15% boost to runway moneyPerClickBoost
         owned: 0,
-        unlocked: false
+        unlocked: false // Unlocks at Level 2
     },
     {
         id: 'parking-garage',
         name: 'Parking Garage',
-        description: 'Provides parking for passengers',
-        baseCost: 5000,
-        moneyPerSecond: 50,
-        passengersPerSecond: 10,
+        description: 'Provides parking for passengers, generating passive income. Income scales with Reputation.',
+        baseCost: 12000, // Increased cost
+        moneyPerSecondBase: 30, // Base passive income
+        // passengersPerSecond: 0, // Removed passive passengers
         owned: 0,
-        unlocked: false
+        unlocked: false // Unlocks at Level 3
     }
 ];
 
@@ -61,29 +63,32 @@ export const staffDefinitions = [
     {
         id: 'pilot',
         name: 'Pilot',
-        description: 'Flies the planes',
-        baseCost: 25,
-        clickMultiplier: 1.2,
+        description: 'Increases money earned per flight operation by 2%.',
+        baseCost: 150, // Increased cost
+        // clickMultiplier: 1.2, // Removed
+        moneyPerClickBonus: 0.02, // New: +2% money per click per pilot
         owned: 0,
         unlocked: true
     },
     {
         id: 'flight-attendant',
         name: 'Flight Attendant',
-        description: 'Takes care of passengers',
-        baseCost: 100,
-        clickMultiplier: 1.5,
+        description: 'Slightly increases passive income from facilities by 1%.',
+        baseCost: 400, // Increased cost
+        // clickMultiplier: 1.5, // Removed
+        passiveIncomeBonus: 0.01, // New: +1% passive income per attendant
         owned: 0,
         unlocked: true
     },
     {
         id: 'mechanic',
         name: 'Mechanic',
-        description: 'Maintains aircraft',
-        baseCost: 500,
-        clickMultiplier: 2,
+        description: 'Slightly increases passive income from facilities by 2%.',
+        baseCost: 1500, // Increased cost
+        // clickMultiplier: 2, // Removed
+        passiveIncomeBonus: 0.02, // New: +2% passive income per mechanic
         owned: 0,
-        unlocked: false
+        unlocked: false // Unlocks at Level 2
     }
 ];
 
@@ -92,27 +97,31 @@ export const upgradeDefinitions = [
     {
         id: 'better-seats',
         name: 'Better Seats',
-        description: 'Improves passenger comfort',
-        cost: 200,
-        effect: 'Doubles passengers per click',
+        description: 'Improves passenger comfort, increasing money earned per flight operation by 20%.',
+        cost: 500, // Increased cost
+        effect: '+20% Money per Flight Operation',
         purchased: false,
         unlocked: true,
         applyUpgrade: () => {
-            gameState.passengersPerClick *= 2;
-            addNotification('Upgrade purchased: Better Seats', 'success');
+            // gameState.passengersPerClick *= 2; // Old effect
+            if (!gameState.moneyPerClickMultiplier) gameState.moneyPerClickMultiplier = 1;
+            gameState.moneyPerClickMultiplier += 0.20; // Additive bonus for now
+            addNotification('Upgrade purchased: Better Seats (+20% Flight Revenue)', 'success');
         }
     },
     {
         id: 'faster-check-in',
         name: 'Faster Check-in',
-        description: 'Speeds up passenger processing',
-        cost: 500,
-        effect: 'Increases money per click by 50%',
+        description: 'Speeds up passenger processing, increasing passive income from facilities by 15%.',
+        cost: 1200, // Increased cost
+        effect: '+15% Passive Income',
         purchased: false,
         unlocked: true,
         applyUpgrade: () => {
-            gameState.clickValue *= 1.5;
-            addNotification('Upgrade purchased: Faster Check-in', 'success');
+            // gameState.clickValue *= 1.5; // Old effect
+            if (!gameState.passiveIncomeMultiplier) gameState.passiveIncomeMultiplier = 1;
+            gameState.passiveIncomeMultiplier += 0.15; // Additive bonus for now
+            addNotification('Upgrade purchased: Faster Check-in (+15% Passive Income)', 'success');
         }
     }
 ];
