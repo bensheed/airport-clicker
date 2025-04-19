@@ -1,5 +1,5 @@
 // Import state and UI functions
-import { gameState, saveGame, incrementSaveCounter, resetSaveCounter } from './state.js';
+import { gameState, saveGame, saveCounter, incrementSaveCounter, resetSaveCounter } from './state.js';
 import { 
     updateResourceDisplay, 
     showClickFeedback, 
@@ -13,6 +13,7 @@ import {
 
 // Main click handler
 export function handleMainClick() {
+    console.log('handleMainClick called');
     // Prevent rapid clicking
     if (gameState.clickCooldown) return;
     

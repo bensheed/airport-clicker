@@ -23,6 +23,11 @@
                     <span>Reputation: </span>
                     <span id="reputation">0</span>
                 </div>
+                <div class="resource level-progress">
+                    <span>Level Progress: </span>
+                    <progress id="level-progress-bar" value="0" max="10"></progress>
+                    <span id="level-progress-text">0/10 Rep</span>
+                </div>
             </div>
         </header>
 
@@ -77,10 +82,14 @@
                                 <span>Airport Level: </span>
                                 <span id="airport-level">1</span>
                             </div>
-                        </div>
-                            <div class="stat-action">
-                                <button id="reset-progress-button">Reset Progress</button>
+                            <div class="stat stat-button-container"> <!-- Added container div -->
+                                <button id="reset-progress-button" class="button-reset">Reset Progress</button>
                             </div>
+                        </div>
+                        <div id="level-unlocks-list">
+                            <!-- Level unlocks will be added here -->
+                        </div>
+                        <!-- Removed stat-action div -->
                     </div>
                 </div>
             </div>
