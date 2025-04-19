@@ -345,3 +345,90 @@ footer {
     color: #666;
     margin-left: 5px;
 }
+
+/* Level Unlocks List Styling */
+#level-unlocks-list {
+    margin-top: 20px; /* Add space above the list */
+    padding: 10px;
+    background-color: #f8f9fa; /* Match stat item background */
+    border: 1px solid #ddd;    /* Match stat item border */
+    border-radius: 5px;
+}
+
+#level-unlocks-list h3 {
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee; /* Lighter border for heading */
+    font-size: 1.1em;
+}
+
+#level-unlocks-list ul {
+    list-style: disc; /* Use standard bullets */
+    padding-left: 25px; /* Indent list items */
+}
+
+#level-unlocks-list li {
+    margin-bottom: 5px; /* Space out list items */
+}
+
+/* Refined Locked Item Styling */
+.building-item.locked,
+.staff-item.locked,
+.upgrade-item.locked {
+    opacity: 0.65; /* Slightly less transparent */
+    background-color: #f0f0f0; /* Add a light grey background */
+    border-left: 3px solid #aaa; /* Darker grey border */
+}
+
+/* Keep lock text relatively small and grey */
+.building-item.locked .building-name span,
+.staff-item.locked .staff-name span,
+.upgrade-item.locked .upgrade-name span {
+    font-size: 0.8em;
+    font-weight: normal; /* Don't bold the lock text */
+    color: #555;
+    margin-left: 8px;
+}
+
+/* Stats Tab Button Styling */
+.stats-container {
+    /* Ensure it remains a grid */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    align-items: center; /* Vertically align items in the grid */
+}
+
+.stat-button-container {
+    /* Override default stat padding/border if needed, or just align */
+    padding: 0; 
+    border: none;
+    background-color: transparent;
+    display: flex; /* Use flexbox for alignment within the cell */
+    justify-content: flex-start; /* Align button to the start */
+    align-items: center; /* Center button vertically */
+}
+
+.button-reset {
+    /* Base styles similar to .buy-button */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    font-size: 0.9em; /* Slightly smaller than buy buttons maybe */
+    
+    /* Specific reset button color (e.g., warning/danger) */
+    background-color: #e74c3c; /* Red */
+    width: auto; /* Allow button to size to content */
+}
+
+.button-reset:hover {
+    background-color: #c0392b; /* Darker red */
+    transform: translateY(-2px);
+}
+
+.button-reset:active {
+    transform: translateY(0);
+}

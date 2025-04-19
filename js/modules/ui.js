@@ -39,16 +39,34 @@ const levelUnlocks = {
 
 // Render level unlock information in the Stats tab
 export function renderLevelUnlocks() {
+    console.log("Attempting to render level unlocks...");
     const unlockListEl = document.getElementById('level-unlocks-list');
-    if (!unlockListEl) return;
+    if (!unlockListEl) {
+        console.error("#level-unlocks-list element not found!");
+        return;
+    }
 
     let unlockHtml = '<h3>Level Unlocks</h3><ul>';
-    for (const level in levelUnlocks) {
-        unlockHtml += `<li>Level ${level}: ${levelUnlocks[level].join(', ')}</li>`;
+    console.log("Initial unlockHtml:", unlockHtml);
+    try {
+        for (const level in levelUnlocks) {
+            console.log(`Processing level: ${level}`);
+            const unlocks = levelUnlocks[level];
+            if (Array.isArray(unlocks)) {
+                const joinedUnlocks = unlocks.join(', ');
+                console.log(`  Unlocks for level ${level}: ${joinedUnlocks}`);
+                unlockHtml += `<li>Level ${level}: ${joinedUnlocks}</li>`;
+            } else {
+                console.warn(`  Data for level ${level} is not an array:`, unlocks);
+            }
+        }
+        unlockHtml += '</ul>';
+        console.log("Final unlockHtml:", unlockHtml);
+        unlockListEl.innerHTML = unlockHtml;
+    } catch (error) {
+        console.error("Error during unlock list generation:", error);
+        unlockListEl.innerHTML = '<h3>Error loading unlocks</h3>'; // Show error in UI
     }
-    unlockHtml += '</ul>';
-
-    unlockListEl.innerHTML = unlockHtml;
 }
 
 // Render buildings tab content
