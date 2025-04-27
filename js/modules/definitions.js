@@ -7,8 +7,9 @@ export const buildingDefinitions = [
     {
         id: 'runway',
         name: 'Runway',
-        description: 'Allows planes to land and take off (Max: 8)',
-        baseCost: 10,
+        description: 'Allows planes to land and take off. Each runway multiplies the effectiveness of others! (Max: 8)',
+        baseCost: 5,
+        costScalingFactor: 2.5, // Special higher scaling factor for runways
         moneyPerSecond: 0.5,
         passengersPerSecond: 0.2,
         owned: 0,
