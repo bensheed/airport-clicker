@@ -80,6 +80,8 @@ export function renderBuildings() {
             const buildingCost = Math.floor(building.baseCost * Math.pow(1.15, building.owned));
             const canAfford = gameState.money >= buildingCost;
             const isLocked = !building.unlocked;
+            // Check if this is a runway and if we've reached the maximum
+            const isMaxRunways = building.id === 'runway' && building.owned >= 8;
 
             const buildingElement = document.createElement('div');
             buildingElement.className = `building-item ${isLocked ? 'locked' : ''}`;
@@ -94,7 +96,9 @@ export function renderBuildings() {
                 <div class="building-cost">Cost: $${buildingCost}</div>
                 <div class="building-description">${building.description}</div>
                 <div class="building-production">${productionText}</div>
-                <button class="buy-button" data-building="${building.id}" ${isLocked || !canAfford ? 'disabled' : ''}>${isLocked ? `Locked (Lvl ${unlockLevel})` : 'Buy'}</button>
+                <button class="buy-button" data-building="${building.id}" ${isLocked || !canAfford || isMaxRunways ? 'disabled' : ''}>
+                    ${isLocked ? `Locked (Lvl ${unlockLevel})` : (isMaxRunways ? 'Max Reached' : 'Buy')}
+                </button>
             `;
 
             buildingList.appendChild(buildingElement);
@@ -214,6 +218,12 @@ export function updateButtonStates() {
             if (item) {
                 cost = Math.floor(item.baseCost * Math.pow(1.15, item.owned));
                 isLocked = !item.unlocked;
+                // Check for runway limit
+                if (item.id === 'runway' && item.owned >= 8) {
+                    button.disabled = true;
+                    button.textContent = 'Max Reached';
+                    return; // Skip the rest of the logic for this button
+                }
             }
         } else if (staffId) {
             item = gameState.staff.find(s => s.id === staffId);

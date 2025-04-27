@@ -168,6 +168,12 @@ export function buyBuilding(buildingId) {
     const building = gameState.buildings.find(b => b.id === buildingId);
     
     if (building) {
+        // Check if this is a runway and if we've reached the maximum (8)
+        if (building.id === 'runway' && building.owned >= 8) {
+            addNotification(`Maximum number of runways (8) reached. Cannot build more.`, 'warning');
+            return;
+        }
+        
         const cost = Math.floor(building.baseCost * Math.pow(1.15, building.owned));
         
         if (gameState.money >= cost) {
