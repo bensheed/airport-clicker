@@ -291,26 +291,57 @@ export function updateButtonStates() {
 export function updateTabBadges() {
     const currentMoney = gameState.money;
     const activeTabId = document.querySelector('.tab-pane.active')?.id;
+    console.log(`[Badge] Updating badges. Active tab: ${activeTabId}, Money: $${currentMoney}`);
 
     // Check Buildings
-    const canAffordBuilding = gameState.buildings.some(b => b.unlocked && currentMoney >= Math.floor(b.baseCost * Math.pow(1.15, b.owned)));
+    const canAffordBuilding = gameState.buildings.some(b => {
+        if (!b.unlocked) return false;
+        // Use custom scaling factor for runways if available, otherwise use default 1.15
+        const scalingFactor = b.id === 'runway' ? (b.costScalingFactor || 2.5) : 1.15;
+        // Check if this is a runway and if we've reached the maximum
+        if (b.id === 'runway' && b.owned >= 8) return false;
+        const cost = Math.floor(b.baseCost * Math.pow(scalingFactor, b.owned));
+        const canAfford = currentMoney >= cost;
+        console.log(`[Badge] Building ${b.id}: unlocked=${b.unlocked}, cost=$${cost}, canAfford=${canAfford}`);
+        return canAfford;
+    });
     const buildingTabButton = document.querySelector('.tab-button[data-tab="buildings"] .badge');
     if (buildingTabButton) {
-        buildingTabButton.classList.toggle('visible', canAffordBuilding && activeTabId !== 'buildings');
+        // Only show badge if we can afford a building AND we're not on the buildings tab
+        const shouldShowBadge = canAffordBuilding && activeTabId !== 'buildings';
+        console.log(`[Badge] Buildings tab badge visible: ${shouldShowBadge}`);
+        buildingTabButton.classList.toggle('visible', shouldShowBadge);
     }
 
     // Check Staff
-    const canAffordStaff = gameState.staff.some(s => s.unlocked && currentMoney >= Math.floor(s.baseCost * Math.pow(1.2, s.owned)));
+    const canAffordStaff = gameState.staff.some(s => {
+        if (!s.unlocked) return false;
+        const cost = Math.floor(s.baseCost * Math.pow(1.2, s.owned));
+        const canAfford = currentMoney >= cost;
+        console.log(`[Badge] Staff ${s.id}: unlocked=${s.unlocked}, cost=$${cost}, canAfford=${canAfford}`);
+        return canAfford;
+    });
     const staffTabButton = document.querySelector('.tab-button[data-tab="staff"] .badge');
     if (staffTabButton) {
-        staffTabButton.classList.toggle('visible', canAffordStaff && activeTabId !== 'staff');
+        // Only show badge if we can afford staff AND we're not on the staff tab
+        const shouldShowBadge = canAffordStaff && activeTabId !== 'staff';
+        console.log(`[Badge] Staff tab badge visible: ${shouldShowBadge}`);
+        staffTabButton.classList.toggle('visible', shouldShowBadge);
     }
 
     // Check Upgrades
-    const canAffordUpgrade = gameState.upgrades.some(u => u.unlocked && !u.purchased && currentMoney >= u.cost);
+    const canAffordUpgrade = gameState.upgrades.some(u => {
+        if (!u.unlocked || u.purchased) return false;
+        const canAfford = currentMoney >= u.cost;
+        console.log(`[Badge] Upgrade ${u.id}: unlocked=${u.unlocked}, purchased=${u.purchased}, cost=$${u.cost}, canAfford=${canAfford}`);
+        return canAfford;
+    });
     const upgradeTabButton = document.querySelector('.tab-button[data-tab="upgrades"] .badge');
     if (upgradeTabButton) {
-        upgradeTabButton.classList.toggle('visible', canAffordUpgrade && activeTabId !== 'upgrades');
+        // Only show badge if we can afford an upgrade AND we're not on the upgrades tab
+        const shouldShowBadge = canAffordUpgrade && activeTabId !== 'upgrades';
+        console.log(`[Badge] Upgrades tab badge visible: ${shouldShowBadge}`);
+        upgradeTabButton.classList.toggle('visible', shouldShowBadge);
     }
 }
 
