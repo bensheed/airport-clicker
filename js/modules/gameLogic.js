@@ -73,10 +73,26 @@ export function gameLoop() {
     let moneyPerSecond = 0;
     let passengersPerSecond = 0;
     
-    // Add income from buildings
+    // Get the number of runways for multiplier calculation
+    const runway = gameState.buildings.find(b => b.id === 'runway');
+    const runwayCount = runway ? runway.owned : 0;
+    
+    // Calculate runway multiplier: 1.0 for 0 runways, 1.2 for 1 runway, 1.44 for 2 runways, etc. (1.2^n)
+    const runwayMultiplier = Math.pow(1.2, runwayCount);
+    
+    // Add income from buildings with runway multiplier for non-runway buildings
     gameState.buildings.forEach(building => {
-        moneyPerSecond += (building.moneyPerSecond || 0) * building.owned;
-        passengersPerSecond += (building.passengersPerSecond || 0) * building.owned;
+        if (building.id === 'runway') {
+            // For runways, calculate with exponential growth (each runway makes others more effective)
+            // Formula: base * owned * (1.5^owned - 1) ensures exponential growth
+            const runwayEffectiveness = building.owned > 0 ? Math.pow(1.5, building.owned) - 1 : 0;
+            moneyPerSecond += (building.moneyPerSecond || 0) * building.owned * (1 + runwayEffectiveness);
+            passengersPerSecond += (building.passengersPerSecond || 0) * building.owned * (1 + runwayEffectiveness);
+        } else {
+            // For other buildings, apply the runway multiplier
+            moneyPerSecond += (building.moneyPerSecond || 0) * building.owned * runwayMultiplier;
+            passengersPerSecond += (building.passengersPerSecond || 0) * building.owned * runwayMultiplier;
+        }
     });
     
     // Update game state
@@ -168,13 +184,23 @@ export function buyBuilding(buildingId) {
     const building = gameState.buildings.find(b => b.id === buildingId);
     
     if (building) {
-        const cost = Math.floor(building.baseCost * Math.pow(1.15, building.owned));
+        // Check if this is a runway and if we've reached the maximum (8)
+        if (building.id === 'runway' && building.owned >= 8) {
+            addNotification(`Maximum number of runways (8) reached. Cannot build more.`, 'warning');
+            return;
+        }
+        
+        // Use custom scaling factor for runways if available, otherwise use default 1.15
+        const scalingFactor = building.id === 'runway' ? (building.costScalingFactor || 2.5) : 1.15;
+        const cost = Math.floor(building.baseCost * Math.pow(scalingFactor, building.owned));
+        console.log(`Attempting to buy ${building.name}. Current money: ${gameState.money}, Cost: ${cost}, Owned: ${building.owned}, Scaling: ${scalingFactor}`);
         
         if (gameState.money >= cost) {
             gameState.money -= cost;
             building.owned += 1;
             
             addNotification(`Purchased a ${building.name}`, 'success');
+            console.log(`Successfully purchased ${building.name}. New owned count: ${building.owned}`);
             
             // Update display & save
             updateResourceDisplay();
@@ -184,6 +210,7 @@ export function buyBuilding(buildingId) {
             saveGame(); 
         } else {
             addNotification(`Not enough money for ${building.name}`, 'warning');
+            console.log(`Failed to purchase ${building.name}. Not enough money.`);
         }
     }
 }

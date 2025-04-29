@@ -7,8 +7,9 @@ export const buildingDefinitions = [
     {
         id: 'runway',
         name: 'Runway',
-        description: 'Allows planes to land and take off',
-        baseCost: 10,
+        description: 'Allows planes to land and take off. Each runway multiplies the effectiveness of others! (Max: 8)',
+        baseCost: 5,
+        costScalingFactor: 2.5, // Special higher scaling factor for runways
         moneyPerSecond: 0.5,
         passengersPerSecond: 0.2,
         owned: 0,
@@ -63,7 +64,7 @@ export const staffDefinitions = [
         name: 'Pilot',
         description: 'Flies the planes',
         baseCost: 25,
-        clickMultiplier: 1.2,
+        clickMultiplier: 1.02, // Reduced from 1.2 to 1.02 (2% bonus)
         owned: 0,
         unlocked: true
     },
@@ -72,7 +73,7 @@ export const staffDefinitions = [
         name: 'Flight Attendant',
         description: 'Takes care of passengers',
         baseCost: 100,
-        clickMultiplier: 1.5,
+        clickMultiplier: 1.05, // Reduced from 1.5 to 1.05 (5% bonus)
         owned: 0,
         unlocked: true
     },
@@ -81,7 +82,7 @@ export const staffDefinitions = [
         name: 'Mechanic',
         description: 'Maintains aircraft',
         baseCost: 500,
-        clickMultiplier: 2,
+        clickMultiplier: 1.10, // Reduced from 2 to 1.10 (10% bonus)
         owned: 0,
         unlocked: false
     }
