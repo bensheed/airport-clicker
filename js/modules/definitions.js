@@ -9,7 +9,7 @@ export const buildingDefinitions = [
         name: 'Runway',
         description: 'Allows planes to land and take off. Each runway multiplies the effectiveness of others! (Max: 8)',
         baseCost: 5,
-        costScalingFactor: 2.5, // Special higher scaling factor for runways
+        costScalingFactor: 2.0, // Reduced from 2.5 to smooth early runway progression
         moneyPerSecond: 0.5,
         passengersPerSecond: 0.2,
         owned: 0,
@@ -20,6 +20,7 @@ export const buildingDefinitions = [
         name: 'Terminal',
         description: 'Processes passengers and provides shopping',
         baseCost: 50,
+        costScalingFactor: 1.12,
         moneyPerSecond: 2,
         passengersPerSecond: 1,
         owned: 0,
@@ -30,6 +31,7 @@ export const buildingDefinitions = [
         name: 'Hangar',
         description: 'Stores and maintains aircraft',
         baseCost: 200,
+        costScalingFactor: 1.12,
         moneyPerSecond: 5,
         passengersPerSecond: 0.5,
         owned: 0,
@@ -40,6 +42,7 @@ export const buildingDefinitions = [
         name: 'Control Tower',
         description: 'Manages air traffic',
         baseCost: 1000,
+        costScalingFactor: 1.12,
         moneyPerSecond: 15,
         passengersPerSecond: 3,
         owned: 0,
@@ -50,6 +53,7 @@ export const buildingDefinitions = [
         name: 'Parking Garage',
         description: 'Provides parking for passengers',
         baseCost: 5000,
+        costScalingFactor: 1.12,
         moneyPerSecond: 50,
         passengersPerSecond: 10,
         owned: 0,
@@ -64,6 +68,7 @@ export const staffDefinitions = [
         name: 'Pilot',
         description: 'Flies the planes',
         baseCost: 25,
+        costScalingFactor: 1.15,
         clickMultiplier: 1.02, // Reduced from 1.2 to 1.02 (2% bonus)
         owned: 0,
         unlocked: true
@@ -73,6 +78,7 @@ export const staffDefinitions = [
         name: 'Flight Attendant',
         description: 'Takes care of passengers',
         baseCost: 100,
+        costScalingFactor: 1.15,
         clickMultiplier: 1.05, // Reduced from 1.5 to 1.05 (5% bonus)
         owned: 0,
         unlocked: true
@@ -82,6 +88,7 @@ export const staffDefinitions = [
         name: 'Mechanic',
         description: 'Maintains aircraft',
         baseCost: 500,
+        costScalingFactor: 1.15,
         clickMultiplier: 1.10, // Reduced from 2 to 1.10 (10% bonus)
         owned: 0,
         unlocked: false

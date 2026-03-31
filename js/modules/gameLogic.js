@@ -190,8 +190,8 @@ export function buyBuilding(buildingId) {
             return;
         }
         
-        // Use custom scaling factor for runways if available, otherwise use default 1.15
-        const scalingFactor = building.id === 'runway' ? (building.costScalingFactor || 2.5) : 1.15;
+        // Use per-building scaling factor when provided
+        const scalingFactor = building.costScalingFactor ?? 1.15;
         const cost = Math.floor(building.baseCost * Math.pow(scalingFactor, building.owned));
         console.log(`Attempting to buy ${building.name}. Current money: ${gameState.money}, Cost: ${cost}, Owned: ${building.owned}, Scaling: ${scalingFactor}`);
         
@@ -220,7 +220,8 @@ export function hireStaff(staffId) {
     const staff = gameState.staff.find(s => s.id === staffId);
     
     if (staff) {
-        const cost = Math.floor(staff.baseCost * Math.pow(1.2, staff.owned));
+        const staffScalingFactor = staff.costScalingFactor ?? 1.2;
+        const cost = Math.floor(staff.baseCost * Math.pow(staffScalingFactor, staff.owned));
         
         if (gameState.money >= cost) {
             gameState.money -= cost;
