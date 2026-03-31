@@ -77,8 +77,8 @@ export function renderBuildings() {
 
     gameState.buildings.forEach(building => {
         // Removed outer unlocked check - render all, style locked ones
-            // Use custom scaling factor for runways if available, otherwise use default 1.15
-            const scalingFactor = building.id === 'runway' ? (building.costScalingFactor || 2.5) : 1.15;
+            // Use per-building scaling factor when provided
+            const scalingFactor = building.costScalingFactor ?? 1.15;
             const buildingCost = Math.floor(building.baseCost * Math.pow(scalingFactor, building.owned));
             const canAfford = gameState.money >= buildingCost;
             const isLocked = !building.unlocked;
@@ -158,7 +158,8 @@ export function renderStaff() {
 
     gameState.staff.forEach(staff => {
         // Removed outer unlocked check
-            const staffCost = Math.floor(staff.baseCost * Math.pow(1.2, staff.owned));
+            const staffScalingFactor = staff.costScalingFactor ?? 1.2;
+            const staffCost = Math.floor(staff.baseCost * Math.pow(staffScalingFactor, staff.owned));
             const canAfford = gameState.money >= staffCost;
             const isLocked = !staff.unlocked;
 
@@ -251,8 +252,8 @@ export function updateButtonStates() {
         if (buildingId) {
             item = gameState.buildings.find(b => b.id === buildingId);
             if (item) {
-                // Use custom scaling factor for runways if available, otherwise use default 1.15
-                const scalingFactor = item.id === 'runway' ? (item.costScalingFactor || 2.5) : 1.15;
+                // Use per-building scaling factor when provided
+                const scalingFactor = item.costScalingFactor ?? 1.15;
                 cost = Math.floor(item.baseCost * Math.pow(scalingFactor, item.owned));
                 isLocked = !item.unlocked;
                 // Check for runway limit
@@ -265,7 +266,8 @@ export function updateButtonStates() {
         } else if (staffId) {
             item = gameState.staff.find(s => s.id === staffId);
             if (item) {
-                cost = Math.floor(item.baseCost * Math.pow(1.2, item.owned));
+                const staffScalingFactor = item.costScalingFactor ?? 1.2;
+                cost = Math.floor(item.baseCost * Math.pow(staffScalingFactor, item.owned));
                 isLocked = !item.unlocked;
             }
         } else if (upgradeId) {
@@ -296,8 +298,8 @@ export function updateTabBadges() {
     // Check Buildings
     const canAffordBuilding = gameState.buildings.some(b => {
         if (!b.unlocked) return false;
-        // Use custom scaling factor for runways if available, otherwise use default 1.15
-        const scalingFactor = b.id === 'runway' ? (b.costScalingFactor || 2.5) : 1.15;
+        // Use per-building scaling factor when provided
+        const scalingFactor = b.costScalingFactor ?? 1.15;
         // Check if this is a runway and if we've reached the maximum
         if (b.id === 'runway' && b.owned >= 8) return false;
         const cost = Math.floor(b.baseCost * Math.pow(scalingFactor, b.owned));
@@ -316,7 +318,8 @@ export function updateTabBadges() {
     // Check Staff
     const canAffordStaff = gameState.staff.some(s => {
         if (!s.unlocked) return false;
-        const cost = Math.floor(s.baseCost * Math.pow(1.2, s.owned));
+        const staffScalingFactor = s.costScalingFactor ?? 1.2;
+        const cost = Math.floor(s.baseCost * Math.pow(staffScalingFactor, s.owned));
         const canAfford = currentMoney >= cost;
         console.log(`[Badge] Staff ${s.id}: unlocked=${s.unlocked}, cost=$${cost}, canAfford=${canAfford}`);
         return canAfford;
