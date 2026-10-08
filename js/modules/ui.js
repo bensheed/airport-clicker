@@ -1,411 +1,452 @@
-// Import game state and logic functions (placeholders)
+// ui.js — all DOM access lives here. Handlers for shop actions are
+// injected via initUI() so this module never imports gameLogic.js
+// (acyclic module graph). Click handlers use event delegation, so
+// re-rendering lists never orphans listeners.
+
 import { gameState } from './state.js';
-import { buyBuilding, hireStaff, purchaseUpgrade } from './gameLogic.js'; // Assuming these will be in gameLogic.js
+import {
+    formatNumber,
+    getBulkCost,
+    getMaxAffordable,
+    getBuildingScaling,
+    computeClickValue,
+    computeMultipliers,
+    reputationProgress,
+    LEVEL_THRESHOLDS,
+    MAX_RUNWAYS,
+    RUNWAY_AURA_PER_RUNWAY,
+    STAFF_COST_SCALING,
+} from './economy.js';
+import {
+    buildingDefinitions,
+    staffDefinitions,
+    upgradeDefinitions,
+    achievementDefinitions,
+    eventDefinitions,
+} from './definitions.js';
 
-// Update resource display in the UI
-export function updateResourceDisplay() {
-    const moneyEl = document.getElementById('money');
-    const passengersEl = document.getElementById('passengers');
-    const reputationEl = document.getElementById('reputation');
-    const totalFlightsEl = document.getElementById('total-flights');
-    const totalPassengersEl = document.getElementById('total-passengers');
-    const airportLevelEl = document.getElementById('airport-level');
-    const levelProgressBar = document.getElementById('level-progress-bar');
-    const levelProgressText = document.getElementById('level-progress-text');
+// ---------- Setup ----------
 
-    if (moneyEl) moneyEl.textContent = gameState.money.toFixed(1);
-    if (passengersEl) passengersEl.textContent = gameState.passengers.toFixed(0);
-    if (reputationEl) reputationEl.textContent = gameState.reputation.toFixed(0);
-    if (totalFlightsEl) totalFlightsEl.textContent = gameState.totalFlights;
-    if (totalPassengersEl) totalPassengersEl.textContent = gameState.totalPassengers.toFixed(0);
-    if (airportLevelEl) airportLevelEl.textContent = gameState.airportLevel;
+// handlers: { onBuyBuilding, onHireStaff, onPurchaseUpgrade, onSetQuantity, onReset }
+export function initUI(handlers) {
+    const clicker = document.getElementById('main-clicker');
+    if (clicker && handlers.onMainClick) {
+        clicker.addEventListener('click', handlers.onMainClick);
+    }
 
-    // Update Level Progress Bar
-    if (levelProgressBar && levelProgressText) {
-        const currentLevelRep = gameState.reputation % 10;
-        const repNeeded = 10;
-        levelProgressBar.value = currentLevelRep;
-        levelProgressBar.max = repNeeded;
-        levelProgressText.textContent = `${currentLevelRep}/${repNeeded} Rep`;
+    // Delegated buy/hire/purchase clicks — survives re-renders.
+    const tabContent = document.querySelector('.tab-content');
+    if (tabContent) {
+        tabContent.addEventListener('click', event => {
+            const button = event.target.closest('button');
+            if (!button || button.disabled) return;
+            if (button.dataset.building) handlers.onBuyBuilding(button.dataset.building);
+            else if (button.dataset.staff) handlers.onHireStaff(button.dataset.staff);
+            else if (button.dataset.upgrade) handlers.onPurchaseUpgrade(button.dataset.upgrade);
+        });
+    }
+
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+            if (tabId) switchTab(tabId);
+        });
+    });
+
+    document.querySelectorAll('.qty-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const qty = button.dataset.qty === 'max' ? 'max' : parseInt(button.dataset.qty, 10);
+            if (qty && handlers.onSetQuantity) handlers.onSetQuantity(qty);
+        });
+    });
+
+    const resetButton = document.getElementById('reset-progress-button');
+    if (resetButton && handlers.onReset) {
+        resetButton.addEventListener('click', handlers.onReset);
     }
 }
 
-// Define level unlocks (could be moved to definitions.js later)
-const levelUnlocks = {
-    2: ['Control Tower', 'Mechanic'],
-    3: ['Parking Garage'],
-    // Add more levels as needed
-};
+// ---------- Resource header ----------
 
-// Render level unlock information in the Stats tab
+export function updateResourceDisplay() {
+    setText('money', formatNumber(gameState.money));
+    setText('passengers', formatNumber(gameState.passengers));
+    setText('reputation', formatNumber(gameState.reputation));
+    setText('header-level', gameState.airportLevel);
+
+    const moneyRate = gameState.moneyPerSecond || 0;
+    const paxRate = gameState.passengersPerSecond || 0;
+    setText('money-rate', `+$${formatNumber(moneyRate)}/s`);
+    setText('passengers-rate', `+${formatNumber(paxRate)}/s`);
+
+    const click = computeClickValue(gameState);
+    setText('click-value', `+$${formatNumber(click.money)} · +${formatNumber(click.passengers)} pax per flight`);
+
+    const progress = reputationProgress(gameState.reputation);
+    const bar = document.getElementById('level-progress-bar');
+    const text = document.getElementById('level-progress-text');
+    if (bar) {
+        bar.value = progress.maxed ? 1 : progress.current;
+        bar.max = progress.maxed ? 1 : progress.needed;
+    }
+    if (text) {
+        text.textContent = progress.maxed
+            ? 'Max level'
+            : `${formatNumber(progress.current)}/${formatNumber(progress.needed)} Rep to Lv${progress.level + 1}`;
+    }
+}
+
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+}
+
+// ---------- Level unlocks (Stats tab) ----------
+
 export function renderLevelUnlocks() {
-    console.log("Attempting to render level unlocks...");
     const unlockListEl = document.getElementById('level-unlocks-list');
-    if (!unlockListEl) {
-        console.error("#level-unlocks-list element not found!");
+    if (!unlockListEl) return;
+
+    // Group every unlockable definition by the level that unlocks it.
+    const byLevel = new Map();
+    for (const item of [...buildingDefinitions, ...staffDefinitions, ...upgradeDefinitions]) {
+        const level = item.unlockLevel || 1;
+        if (level <= 1) continue;
+        if (!byLevel.has(level)) byLevel.set(level, []);
+        byLevel.get(level).push(item.name);
+    }
+
+    let html = '<h3>Level Unlocks</h3><ul>';
+    for (const [level, names] of [...byLevel.entries()].sort((a, b) => a[0] - b[0])) {
+        const done = gameState.airportLevel >= level ? ' class="unlock-done"' : '';
+        html += `<li${done}><strong>Level ${level}</strong> (${LEVEL_THRESHOLDS[level]} rep): ${names.join(', ')}</li>`;
+    }
+    html += '</ul>';
+    unlockListEl.innerHTML = html;
+}
+
+// ---------- Quantity selector ----------
+
+export function updateQuantitySelector() {
+    document.querySelectorAll('.qty-button').forEach(button => {
+        const qty = button.dataset.qty === 'max' ? 'max' : parseInt(button.dataset.qty, 10);
+        button.classList.toggle('active', qty === gameState.buyQuantity);
+    });
+}
+
+function quantityLabel(item, scaling) {
+    const selected = gameState.buyQuantity;
+    if (selected === 'max') {
+        const cap = item.id === 'runway' ? MAX_RUNWAYS - item.owned : Infinity;
+        const qty = Math.min(getMaxAffordable(item.baseCost, scaling, item.owned, gameState.money), cap);
+        return Math.max(qty, 1);
+    }
+    return Math.min(selected, item.id === 'runway' ? MAX_RUNWAYS - item.owned : selected);
+}
+
+// ---------- Shop rendering ----------
+
+export function renderBuildings() {
+    const list = document.querySelector('.building-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    const multipliers = currentMultipliers();
+
+    for (const building of gameState.buildings) {
+        const scaling = getBuildingScaling(building);
+        const isLocked = !building.unlocked;
+        const atCap = building.id === 'runway' && building.owned >= MAX_RUNWAYS;
+        const qty = quantityLabel(building, scaling);
+        const cost = getBulkCost(building.baseCost, scaling, building.owned, qty);
+        const canAfford = gameState.money >= cost && !atCap;
+
+        const perBuildingMult = multipliers.perBuilding[building.id] || 1;
+        const runwayAura = building.id === 'runway' ? 1 : 1 + RUNWAY_AURA_PER_RUNWAY * runwayCount();
+        const moneyEach = (building.moneyPerSecond || 0) * multipliers.buildingMoney * perBuildingMult * runwayAura;
+        const paxEach = (building.passengersPerSecond || 0) * multipliers.buildingPassengers * perBuildingMult * runwayAura;
+
+        let productionText = `Each: $${formatNumber(moneyEach)}/s · ${formatNumber(paxEach)} pax/s`;
+        if (building.owned > 0) {
+            productionText += `<br>Owned ×${building.owned}: $${formatNumber(moneyEach * building.owned)}/s · ${formatNumber(paxEach * building.owned)} pax/s`;
+        }
+        if (building.id === 'runway' && building.owned > 0) {
+            productionText += `<br>Aura: +${Math.round(RUNWAY_AURA_PER_RUNWAY * building.owned * 100)}% to all other buildings`;
+        }
+
+        const buttonLabel = isLocked
+            ? `Unlocks at level ${building.unlockLevel}`
+            : atCap
+                ? 'Max Reached'
+                : `Buy ×${qty} — $${formatNumber(cost)}`;
+
+        const el = document.createElement('div');
+        el.className = `shop-item ${isLocked ? 'locked' : ''}`;
+        el.innerHTML = `
+            <div class="item-name">${building.name} <span class="owned-count">(${building.owned}${building.id === 'runway' ? '/' + MAX_RUNWAYS : ''})</span></div>
+            <div class="item-description">${building.description}</div>
+            <div class="item-production">${productionText}</div>
+            <button class="buy-button" data-building="${building.id}" ${isLocked || !canAfford ? 'disabled' : ''}>${buttonLabel}</button>
+        `;
+        list.appendChild(el);
+    }
+}
+
+export function renderStaff() {
+    const list = document.querySelector('.staff-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    for (const staff of gameState.staff) {
+        const isLocked = !staff.unlocked;
+        const qty = quantityLabel(staff, STAFF_COST_SCALING);
+        const cost = getBulkCost(staff.baseCost, STAFF_COST_SCALING, staff.owned, qty);
+        const canAfford = gameState.money >= cost;
+
+        const bonusText = staff.effect ? describeEffect(staff.effect, true) : '';
+
+        const buttonLabel = isLocked
+            ? `Unlocks at level ${staff.unlockLevel}`
+            : `Hire ×${qty} — $${formatNumber(cost)}`;
+
+        const el = document.createElement('div');
+        el.className = `shop-item ${isLocked ? 'locked' : ''}`;
+        el.innerHTML = `
+            <div class="item-name">${staff.name} <span class="owned-count">(${staff.owned})</span></div>
+            <div class="item-description">${staff.description}</div>
+            <div class="item-production">${bonusText}</div>
+            <button class="buy-button" data-staff="${staff.id}" ${isLocked || !canAfford ? 'disabled' : ''}>${buttonLabel}</button>
+        `;
+        list.appendChild(el);
+    }
+}
+
+export function renderUpgrades() {
+    const list = document.querySelector('.upgrade-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    for (const upgrade of gameState.upgrades) {
+        const isLocked = !upgrade.unlocked;
+        const isPurchased = upgrade.purchased;
+        const canAfford = gameState.money >= upgrade.cost;
+
+        const buttonLabel = isLocked
+            ? `Unlocks at level ${upgrade.unlockLevel}`
+            : isPurchased
+                ? 'Purchased'
+                : `Purchase — $${formatNumber(upgrade.cost)}`;
+
+        const el = document.createElement('div');
+        el.className = `shop-item upgrade-item ${isPurchased ? 'purchased' : ''} ${isLocked ? 'locked' : ''}`;
+        el.innerHTML = `
+            <div class="item-name">${upgrade.name}</div>
+            <div class="item-description">${upgrade.description}</div>
+            <div class="item-production">${upgrade.effectText}</div>
+            <button class="buy-button" data-upgrade="${upgrade.id}" ${isLocked || isPurchased || !canAfford ? 'disabled' : ''}>${buttonLabel}</button>
+        `;
+        list.appendChild(el);
+    }
+}
+
+export function renderAchievements() {
+    const list = document.querySelector('.achievement-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    for (const achievement of achievementDefinitions) {
+        const earned = gameState.achievements.includes(achievement.id);
+        const el = document.createElement('div');
+        el.className = `shop-item achievement-item ${earned ? 'earned' : 'unearned'}`;
+        el.innerHTML = `
+            <div class="item-name">${achievement.name}${earned ? ' <span class="earned-tag">Earned</span>' : ''}</div>
+            <div class="item-description">${achievement.description}</div>
+        `;
+        list.appendChild(el);
+    }
+}
+
+export function renderStats() {
+    setText('total-flights', formatNumber(gameState.totalFlights));
+    setText('total-passengers', formatNumber(gameState.totalPassengers));
+    setText('airport-level', gameState.airportLevel);
+    setText('stat-money-rate', `$${formatNumber(gameState.moneyPerSecond)}/s`);
+    setText('stat-pax-rate', `${formatNumber(gameState.passengersPerSecond)}/s`);
+    setText('stat-lifetime-money', `$${formatNumber(gameState.totalMoneyEarned)}`);
+    const click = computeClickValue(gameState);
+    setText('stat-click-value', `$${formatNumber(click.money)} · ${formatNumber(click.passengers)} pax`);
+    setText('stat-achievements', `${gameState.achievements.length}/${achievementDefinitions.length}`);
+}
+
+export function renderEventBanner() {
+    const banner = document.getElementById('event-banner');
+    if (!banner) return;
+    const now = Date.now();
+    const active = gameState.activeEvents.filter(e => e.endsAt > now);
+    if (active.length === 0) {
+        banner.innerHTML = '';
+        banner.className = 'event-banner hidden';
         return;
     }
-
-    let unlockHtml = '<h3>Level Unlocks</h3><ul>';
-    console.log("Initial unlockHtml:", unlockHtml);
-    try {
-        for (const level in levelUnlocks) {
-            console.log(`Processing level: ${level}`);
-            const unlocks = levelUnlocks[level];
-            if (Array.isArray(unlocks)) {
-                const joinedUnlocks = unlocks.join(', ');
-                console.log(`  Unlocks for level ${level}: ${joinedUnlocks}`);
-                unlockHtml += `<li>Level ${level}: ${joinedUnlocks}</li>`;
-            } else {
-                console.warn(`  Data for level ${level} is not an array:`, unlocks);
-            }
-        }
-        unlockHtml += '</ul>';
-        console.log("Final unlockHtml:", unlockHtml);
-        unlockListEl.innerHTML = unlockHtml;
-    } catch (error) {
-        console.error("Error during unlock list generation:", error);
-        unlockListEl.innerHTML = '<h3>Error loading unlocks</h3>'; // Show error in UI
-    }
+    banner.className = 'event-banner';
+    banner.innerHTML = active.map(active => {
+        const def = eventDefinitions.find(d => d.id === active.id);
+        const secs = Math.max(0, Math.ceil((active.endsAt - now) / 1000));
+        return `<span class="event-chip ${def && def.polarity === 'bad' ? 'bad' : 'good'}">${def ? def.name : active.id} · ${secs}s</span>`;
+    }).join('');
 }
 
-// Render buildings tab content
-export function renderBuildings() {
-    const buildingList = document.querySelector('.building-list');
-    if (!buildingList) return;
-    buildingList.innerHTML = '';
+// ---------- Helpers ----------
 
-    gameState.buildings.forEach(building => {
-        // Removed outer unlocked check - render all, style locked ones
-            // Use custom scaling factor for runways if available, otherwise use default 1.15
-            const scalingFactor = building.id === 'runway' ? (building.costScalingFactor || 2.5) : 1.15;
-            const buildingCost = Math.floor(building.baseCost * Math.pow(scalingFactor, building.owned));
-            const canAfford = gameState.money >= buildingCost;
-            const isLocked = !building.unlocked;
-            // Check if this is a runway and if we've reached the maximum
-            const isMaxRunways = building.id === 'runway' && building.owned >= 8;
-
-            // Debug logging for runway
-            if (building.id === 'runway') {
-                console.log(`[UI] Rendering runway: owned=${building.owned}, cost=$${buildingCost}, canAfford=${canAfford}, money=$${gameState.money}`);
-            }
-
-            const buildingElement = document.createElement('div');
-            buildingElement.className = `building-item ${isLocked ? 'locked' : ''}`;
-            let unlockLevel = '?'; // Determine unlock level (can be improved)
-            if (building.id === 'control-tower') unlockLevel = '2';
-            if (building.id === 'parking-garage') unlockLevel = '3';
-            const lockText = isLocked ? `<span>(Locked - Lvl ${unlockLevel})</span>` : '';
-            let productionText = '';
-            
-            if (building.id === 'runway') {
-                // For runways, show the compounding effect
-                const runwayEffectiveness = building.owned > 0 ? Math.pow(1.5, building.owned) - 1 : 0;
-                const effectiveMoneyPerSecond = (building.moneyPerSecond || 0) * building.owned * (1 + runwayEffectiveness);
-                const effectivePassengersPerSecond = (building.passengersPerSecond || 0) * building.owned * (1 + runwayEffectiveness);
-                
-                productionText = `Produces: $${effectiveMoneyPerSecond.toFixed(1)}/s, ${effectivePassengersPerSecond.toFixed(1)} passengers/s`;
-                
-                // Add multiplier info
-                if (building.owned > 0) {
-                    const multiplier = Math.pow(1.2, building.owned).toFixed(2);
-                    productionText += `<br>All other buildings get a ${multiplier}x multiplier!`;
-                }
-            } else {
-                // For other buildings, show base production
-                productionText = `Produces: $${building.moneyPerSecond || 0}/s, ${building.passengersPerSecond || 0} passengers/s`;
-                
-                // If runways exist, show the multiplied value too
-                const runway = gameState.buildings.find(b => b.id === 'runway');
-                if (runway && runway.owned > 0) {
-                    const multiplier = Math.pow(1.2, runway.owned);
-                    const boostedMoney = (building.moneyPerSecond || 0) * multiplier;
-                    const boostedPassengers = (building.passengersPerSecond || 0) * multiplier;
-                    productionText += `<br>With runway bonus: $${boostedMoney.toFixed(1)}/s, ${boostedPassengers.toFixed(1)} passengers/s`;
-                }
-            }
-
-            buildingElement.innerHTML = `
-                <div class="building-name">${building.name} (${building.owned})</div> 
-                <div class="building-cost">Cost: $${buildingCost}</div>
-                <div class="building-description">${building.description}</div>
-                <div class="building-production">${productionText}</div>
-                <button class="buy-button" data-building="${building.id}" ${isLocked || !canAfford || isMaxRunways ? 'disabled' : ''}>
-                    ${isLocked ? `Locked (Lvl ${unlockLevel})` : (isMaxRunways ? 'Max Reached' : 'Buy')}
-                </button>
-            `;
-
-            buildingList.appendChild(buildingElement);
-
-            // Add event listener only if NOT locked
-            if (!isLocked) {
-                const buyButton = buildingElement.querySelector('.buy-button');
-                if (buyButton) {
-                    buyButton.addEventListener('click', () => {
-                        console.log(`[UI] Buy button clicked for ${building.id}. Current owned: ${building.owned}, Cost: $${buildingCost}`);
-                        buyBuilding(building.id); // Needs gameLogic.js
-                    });
-                }
-            }
-    });
+function runwayCount() {
+    const runway = gameState.buildings.find(b => b.id === 'runway');
+    return runway ? Math.min(runway.owned, MAX_RUNWAYS) : 0;
 }
 
-// Render staff tab content
-export function renderStaff() {
-    const staffList = document.querySelector('.staff-list');
-    if (!staffList) return;
-    staffList.innerHTML = '';
-
-    gameState.staff.forEach(staff => {
-        // Removed outer unlocked check
-            const staffCost = Math.floor(staff.baseCost * Math.pow(1.2, staff.owned));
-            const canAfford = gameState.money >= staffCost;
-            const isLocked = !staff.unlocked;
-
-            const staffElement = document.createElement('div');
-            staffElement.className = `staff-item ${isLocked ? 'locked' : ''}`;
-            let unlockLevel = '?';
-            if (staff.id === 'mechanic') unlockLevel = '2';
-            const lockText = isLocked ? `<span>(Locked - Lvl ${unlockLevel})</span>` : '';
-            const bonusText = `Click Bonus: ${((staff.clickMultiplier - 1) * 100).toFixed(0)}% per ${staff.name}`; // Using original logic
-
-            staffElement.innerHTML = `
-                <div class="staff-name">${staff.name} (${staff.owned})</div>
-                <div class="staff-cost">Cost: $${staffCost}</div>
-                <div class="staff-description">${staff.description}</div>
-                <div class="staff-bonus">${bonusText}</div>
-                <button class="buy-button" data-staff="${staff.id}" ${isLocked || !canAfford ? 'disabled' : ''}>${isLocked ? `Locked (Lvl ${unlockLevel})` : 'Hire'}</button>
-            `;
-
-            staffList.appendChild(staffElement);
-
-            // Add event listener only if NOT locked
-            if (!isLocked) {
-                const buyButton = staffElement.querySelector('.buy-button');
-                if (buyButton) {
-                    buyButton.addEventListener('click', () => {
-                        hireStaff(staff.id); // Needs gameLogic.js
-                    });
-                }
-            }
-    });
+function currentMultipliers() {
+    return computeMultipliers(gameState);
 }
 
-// Render upgrades tab content
-export function renderUpgrades() {
-    const upgradeList = document.querySelector('.upgrade-list');
-    if (!upgradeList) return;
-    upgradeList.innerHTML = ''; // Clear existing items
-
-    gameState.upgrades.forEach(upgrade => {
-        // Removed outer unlocked check
-            const canAfford = gameState.money >= upgrade.cost;
-            const isPurchased = upgrade.purchased;
-            const isLocked = !upgrade.unlocked;
-
-            const upgradeElement = document.createElement('div');
-            // Add 'purchased' and 'locked' classes
-            upgradeElement.className = `upgrade-item ${isPurchased ? 'purchased' : ''} ${isLocked ? 'locked' : ''}`;
-
-            const lockText = isLocked ? `<span>(Locked)</span>` : ''; // No level info for upgrades yet
-
-            upgradeElement.innerHTML = `
-                <div class="upgrade-name">${upgrade.name}</div>
-                <div class="upgrade-cost">Cost: $${upgrade.cost}</div>
-                <div class="upgrade-description">${upgrade.description}</div>
-                <div class="upgrade-effect">${upgrade.effect}</div>
-                <button class="buy-button" data-upgrade="${upgrade.id}" ${isLocked || isPurchased || !canAfford ? 'disabled' : ''}>
-                    ${isLocked ? 'Locked' : (isPurchased ? 'Purchased' : 'Purchase')} 
-                </button>
-            `;
-
-            upgradeList.appendChild(upgradeElement);
-
-            // Add event listener only if NOT locked and NOT purchased
-            if (!isLocked && !isPurchased) {
-                const buyButton = upgradeElement.querySelector('.buy-button');
-                if (buyButton) {
-                    buyButton.addEventListener('click', () => {
-                        purchaseUpgrade(upgrade.id); // Needs gameLogic.js
-                    });
-                }
-            }
-    });
+// Human-readable description of a staff effect.
+function describeEffect(effect, perUnit) {
+    const pct = Math.round((effect.factor - 1) * 100);
+    const sign = pct >= 0 ? '+' : '';
+    const per = perUnit ? ' each' : '';
+    const labels = {
+        clickMoney: 'money per flight',
+        clickPassengers: 'passengers per flight',
+        buildingMoney: 'building income',
+        buildingPassengers: 'passenger production',
+        allMoney: 'all money income',
+        allPassengers: 'all passenger gains',
+        all: 'all gains',
+    };
+    const label = labels[effect.target] || effect.target;
+    return `${sign}${pct}% ${label}${per}`;
 }
 
-// Update the enabled/disabled state of buy/hire buttons
+// ---------- Button states & badges ----------
+
 export function updateButtonStates() {
-    const currentMoney = gameState.money;
-    const buttons = document.querySelectorAll('.buy-button');
+    const money = gameState.money;
+    document.querySelectorAll('.buy-button').forEach(button => {
+        const buildingId = button.dataset.building;
+        const staffId = button.dataset.staff;
+        const upgradeId = button.dataset.upgrade;
 
-    buttons.forEach(button => {
-        let item;
-        let cost;
-        let isLocked = false; 
-        let isPurchased = false; // Declare isPurchased here
-
-        const buildingId = button.getAttribute('data-building');
-        const staffId = button.getAttribute('data-staff');
-        const upgradeId = button.getAttribute('data-upgrade');
-
+        let disabled = true;
         if (buildingId) {
-            item = gameState.buildings.find(b => b.id === buildingId);
-            if (item) {
-                // Use custom scaling factor for runways if available, otherwise use default 1.15
-                const scalingFactor = item.id === 'runway' ? (item.costScalingFactor || 2.5) : 1.15;
-                cost = Math.floor(item.baseCost * Math.pow(scalingFactor, item.owned));
-                isLocked = !item.unlocked;
-                // Check for runway limit
-                if (item.id === 'runway' && item.owned >= 8) {
-                    button.disabled = true;
-                    button.textContent = 'Max Reached';
-                    return; // Skip the rest of the logic for this button
+            const item = gameState.buildings.find(b => b.id === buildingId);
+            if (item && item.unlocked) {
+                const atCap = item.id === 'runway' && item.owned >= MAX_RUNWAYS;
+                if (!atCap) {
+                    const scaling = getBuildingScaling(item);
+                    const qty = quantityLabel(item, scaling);
+                    const cost = getBulkCost(item.baseCost, scaling, item.owned, qty);
+                    disabled = money < cost;
+                    if (gameState.buyQuantity === 'max') {
+                        button.textContent = `Buy ×${qty} — $${formatNumber(cost)}`;
+                    }
                 }
             }
         } else if (staffId) {
-            item = gameState.staff.find(s => s.id === staffId);
-            if (item) {
-                cost = Math.floor(item.baseCost * Math.pow(1.2, item.owned));
-                isLocked = !item.unlocked;
+            const item = gameState.staff.find(s => s.id === staffId);
+            if (item && item.unlocked) {
+                const qty = quantityLabel(item, STAFF_COST_SCALING);
+                const cost = getBulkCost(item.baseCost, STAFF_COST_SCALING, item.owned, qty);
+                disabled = money < cost;
+                if (gameState.buyQuantity === 'max') {
+                    button.textContent = `Buy ×${qty} — $${formatNumber(cost)}`;
+                }
             }
         } else if (upgradeId) {
-            item = gameState.upgrades.find(u => u.id === upgradeId);
-            if (item) {
-                cost = item.cost;
-                isPurchased = item.purchased;
-                isLocked = !item.unlocked;
-            }
+            const item = gameState.upgrades.find(u => u.id === upgradeId);
+            if (item) disabled = !item.unlocked || item.purchased || money < item.cost;
         }
-
-        if (item) {
-            // Disable if locked, purchased (for upgrades), or if cannot afford
-            button.disabled = isLocked || isPurchased || currentMoney < cost;
-        } else {
-            // If item not found for some reason, disable the button
-            button.disabled = true;
-        }
+        button.disabled = disabled;
     });
 }
 
-// Update tab badges based on affordability and active tab
 export function updateTabBadges() {
-    const currentMoney = gameState.money;
-    const activeTabId = document.querySelector('.tab-pane.active')?.id;
-    console.log(`[Badge] Updating badges. Active tab: ${activeTabId}, Money: $${currentMoney}`);
+    const money = gameState.money;
+    const activeTab = document.querySelector('.tab-pane.active');
+    const activeTabId = activeTab ? activeTab.id : '';
 
-    // Check Buildings
-    const canAffordBuilding = gameState.buildings.some(b => {
+    const affordableBuilding = gameState.buildings.some(b => {
         if (!b.unlocked) return false;
-        // Use custom scaling factor for runways if available, otherwise use default 1.15
-        const scalingFactor = b.id === 'runway' ? (b.costScalingFactor || 2.5) : 1.15;
-        // Check if this is a runway and if we've reached the maximum
-        if (b.id === 'runway' && b.owned >= 8) return false;
-        const cost = Math.floor(b.baseCost * Math.pow(scalingFactor, b.owned));
-        const canAfford = currentMoney >= cost;
-        console.log(`[Badge] Building ${b.id}: unlocked=${b.unlocked}, cost=$${cost}, canAfford=${canAfford}`);
-        return canAfford;
+        if (b.id === 'runway' && b.owned >= MAX_RUNWAYS) return false;
+        return money >= getBulkCost(b.baseCost, getBuildingScaling(b), b.owned, quantityLabel(b, getBuildingScaling(b)));
     });
-    const buildingTabButton = document.querySelector('.tab-button[data-tab="buildings"] .badge');
-    if (buildingTabButton) {
-        // Only show badge if we can afford a building AND we're not on the buildings tab
-        const shouldShowBadge = canAffordBuilding && activeTabId !== 'buildings';
-        console.log(`[Badge] Buildings tab badge visible: ${shouldShowBadge}`);
-        buildingTabButton.classList.toggle('visible', shouldShowBadge);
-    }
+    setBadge('buildings', affordableBuilding && activeTabId !== 'buildings');
 
-    // Check Staff
-    const canAffordStaff = gameState.staff.some(s => {
+    const affordableStaff = gameState.staff.some(s => {
         if (!s.unlocked) return false;
-        const cost = Math.floor(s.baseCost * Math.pow(1.2, s.owned));
-        const canAfford = currentMoney >= cost;
-        console.log(`[Badge] Staff ${s.id}: unlocked=${s.unlocked}, cost=$${cost}, canAfford=${canAfford}`);
-        return canAfford;
+        return money >= getBulkCost(s.baseCost, STAFF_COST_SCALING, s.owned, quantityLabel(s, STAFF_COST_SCALING));
     });
-    const staffTabButton = document.querySelector('.tab-button[data-tab="staff"] .badge');
-    if (staffTabButton) {
-        // Only show badge if we can afford staff AND we're not on the staff tab
-        const shouldShowBadge = canAffordStaff && activeTabId !== 'staff';
-        console.log(`[Badge] Staff tab badge visible: ${shouldShowBadge}`);
-        staffTabButton.classList.toggle('visible', shouldShowBadge);
-    }
+    setBadge('staff', affordableStaff && activeTabId !== 'staff');
 
-    // Check Upgrades
-    const canAffordUpgrade = gameState.upgrades.some(u => {
-        if (!u.unlocked || u.purchased) return false;
-        const canAfford = currentMoney >= u.cost;
-        console.log(`[Badge] Upgrade ${u.id}: unlocked=${u.unlocked}, purchased=${u.purchased}, cost=$${u.cost}, canAfford=${canAfford}`);
-        return canAfford;
-    });
-    const upgradeTabButton = document.querySelector('.tab-button[data-tab="upgrades"] .badge');
-    if (upgradeTabButton) {
-        // Only show badge if we can afford an upgrade AND we're not on the upgrades tab
-        const shouldShowBadge = canAffordUpgrade && activeTabId !== 'upgrades';
-        console.log(`[Badge] Upgrades tab badge visible: ${shouldShowBadge}`);
-        upgradeTabButton.classList.toggle('visible', shouldShowBadge);
-    }
+    const affordableUpgrade = gameState.upgrades.some(u =>
+        u.unlocked && !u.purchased && money >= u.cost
+    );
+    setBadge('upgrades', affordableUpgrade && activeTabId !== 'upgrades');
 }
 
-// Switch between tabs in the UI
+function setBadge(tabId, visible) {
+    const badge = document.querySelector(`.tab-button[data-tab="${tabId}"] .badge`);
+    if (badge) badge.classList.toggle('visible', visible);
+}
+
 export function switchTab(tabId) {
-    console.log(`switchTab called with tabId: ${tabId}`);
-    // Hide all tab panes
-    const tabPanes = document.querySelectorAll('.tab-pane');
-    tabPanes.forEach(pane => {
-        pane.classList.remove('active');
-    });
+    document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
 
-    // Deactivate all tab buttons
-    const tabButtons = document.querySelectorAll('.tab-button');
-    tabButtons.forEach(button => {
-        button.classList.remove('active');
-    });
+    const pane = document.getElementById(tabId);
+    if (pane) pane.classList.add('active');
+    const button = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
+    if (button) button.classList.add('active');
 
-    // Show selected tab pane
-    const selectedPane = document.getElementById(tabId);
-    if (selectedPane) {
-        selectedPane.classList.add('active');
-    }
-
-    // Activate selected tab button
-    const selectedButton = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
-    if (selectedButton) {
-        selectedButton.classList.add('active');
-    }
-    updateTabBadges(); // Update badges after tab switch
+    if (tabId === 'stats') renderStats();
+    if (tabId === 'achievements') renderAchievements();
+    updateTabBadges();
 }
 
-// Add a notification message to the UI
+// ---------- Notifications & feedback ----------
+
 export function addNotification(message, type = 'info') {
-    const notificationList = document.getElementById('notification-list');
-    if (!notificationList) return;
-
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-
-    // Make newer notifications appear at the top
-    notificationList.prepend(notification);
-
-    // Limit to a reasonable number (e.g., 10) notifications
-    const notifications = notificationList.querySelectorAll('.notification');
-    if (notifications.length > 10) {
-        notifications[notifications.length - 1].remove();
+    const list = document.getElementById('notification-list');
+    if (!list) return;
+    const el = document.createElement('div');
+    el.className = `notification ${type}`;
+    el.textContent = message;
+    list.prepend(el);
+    while (list.children.length > 12) {
+        list.lastElementChild.remove();
     }
 }
 
-// Show floating feedback text when clicking the main button
-export function showClickFeedback(text) {
-    const feedbackContainer = document.getElementById('click-feedback');
-    if (!feedbackContainer) return;
+export function showClickFeedback(money, passengers) {
+    const container = document.getElementById('click-feedback');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = 'click-feedback-item';
+    el.textContent = `+$${formatNumber(money)} · +${formatNumber(passengers)} pax`;
+    // Slight horizontal jitter so rapid clicks don't perfectly overlap.
+    el.style.left = `${45 + Math.random() * 10}%`;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+}
 
-    const feedback = document.createElement('div');
-    feedback.className = 'click-feedback-item';
-    feedback.textContent = text;
-
-    feedbackContainer.appendChild(feedback);
-
-    // Remove after animation completes
-    setTimeout(() => {
-        feedback.remove();
-    }, 1500);
+// Full re-render — used on init and reset.
+export function refreshAll() {
+    updateResourceDisplay();
+    renderBuildings();
+    renderStaff();
+    renderUpgrades();
+    renderAchievements();
+    renderStats();
+    renderEventBanner();
+    renderLevelUnlocks();
+    updateQuantitySelector();
+    updateButtonStates();
+    updateTabBadges();
 }

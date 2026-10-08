@@ -9,87 +9,105 @@
 <body>
     <div class="game-container">
         <header>
-            <h1>Airport Clicker</h1>
+            <div class="header-top">
+                <h1>Airport Clicker</h1>
+                <div class="level-badge">Level <span id="header-level">1</span></div>
+            </div>
             <div class="resources">
                 <div class="resource">
-                    <span>Money: </span>
-                    <span id="money">0</span>
+                    <span class="resource-label">Money</span>
+                    <span class="resource-value">$<span id="money">0</span></span>
+                    <span class="resource-rate" id="money-rate">+$0/s</span>
                 </div>
                 <div class="resource">
-                    <span>Passengers: </span>
-                    <span id="passengers">0</span>
+                    <span class="resource-label">Passengers</span>
+                    <span class="resource-value" id="passengers">0</span>
+                    <span class="resource-rate" id="passengers-rate">+0/s</span>
                 </div>
                 <div class="resource">
-                    <span>Reputation: </span>
-                    <span id="reputation">0</span>
+                    <span class="resource-label">Reputation</span>
+                    <span class="resource-value" id="reputation">0</span>
+                    <span class="resource-rate">&nbsp;</span>
                 </div>
                 <div class="resource level-progress">
-                    <span>Level Progress: </span>
-                    <progress id="level-progress-bar" value="0" max="10"></progress>
-                    <span id="level-progress-text">0/10 Rep</span>
+                    <span class="resource-label">Next Level</span>
+                    <progress id="level-progress-bar" value="0" max="15"></progress>
+                    <span class="resource-rate" id="level-progress-text">0/15 Rep</span>
                 </div>
             </div>
         </header>
 
         <main>
             <div class="game-area">
+                <div id="event-banner" class="event-banner hidden"></div>
+
                 <div class="clicker-area">
                     <button id="main-clicker">Operate Flight</button>
+                    <div id="click-value" class="click-value">+$2 · +1 pax per flight</div>
                     <div id="click-feedback"></div>
+                </div>
+
+                <div class="shop-toolbar">
+                    <span class="qty-label">Buy amount:</span>
+                    <div class="qty-selector">
+                        <button class="qty-button active" data-qty="1">×1</button>
+                        <button class="qty-button" data-qty="10">×10</button>
+                        <button class="qty-button" data-qty="100">×100</button>
+                        <button class="qty-button" data-qty="max">Max</button>
+                    </div>
                 </div>
 
                 <div class="tabs">
                     <button class="tab-button active" data-tab="buildings">Buildings<span class="badge"></span></button>
                     <button class="tab-button" data-tab="staff">Staff<span class="badge"></span></button>
                     <button class="tab-button" data-tab="upgrades">Upgrades<span class="badge"></span></button>
+                    <button class="tab-button" data-tab="achievements">Achievements</button>
                     <button class="tab-button" data-tab="stats">Stats</button>
                 </div>
 
                 <div class="tab-content">
                     <div id="buildings" class="tab-pane active">
-                        <h2>Airport Buildings</h2>
-                        <div class="building-list">
+                        <div class="building-list shop-list">
                             <!-- Buildings will be added here dynamically -->
                         </div>
                     </div>
 
                     <div id="staff" class="tab-pane">
-                        <h2>Airport Staff</h2>
-                        <div class="staff-list">
+                        <div class="staff-list shop-list">
                             <!-- Staff will be added here dynamically -->
                         </div>
                     </div>
 
                     <div id="upgrades" class="tab-pane">
-                        <h2>Airport Upgrades</h2>
-                        <div class="upgrade-list">
+                        <div class="upgrade-list shop-list">
                             <!-- Upgrades will be added here dynamically -->
+                        </div>
+                    </div>
+
+                    <div id="achievements" class="tab-pane">
+                        <div class="achievement-list shop-list">
+                            <!-- Achievements will be added here dynamically -->
                         </div>
                     </div>
 
                     <div id="stats" class="tab-pane">
                         <h2>Airport Statistics</h2>
                         <div class="stats-container">
-                            <div class="stat">
-                                <span>Total Flights: </span>
-                                <span id="total-flights">0</span>
-                            </div>
-                            <div class="stat">
-                                <span>Total Passengers: </span>
-                                <span id="total-passengers">0</span>
-                            </div>
-                            <div class="stat">
-                                <span>Airport Level: </span>
-                                <span id="airport-level">1</span>
-                            </div>
-                            <div class="stat stat-button-container"> <!-- Added container div -->
+                            <div class="stat"><span>Total Flights: </span><span id="total-flights">0</span></div>
+                            <div class="stat"><span>Total Passengers: </span><span id="total-passengers">0</span></div>
+                            <div class="stat"><span>Airport Level: </span><span id="airport-level">1</span></div>
+                            <div class="stat"><span>Income: </span><span id="stat-money-rate">$0/s</span></div>
+                            <div class="stat"><span>Passenger Flow: </span><span id="stat-pax-rate">0/s</span></div>
+                            <div class="stat"><span>Per Flight: </span><span id="stat-click-value">$2 · 1 pax</span></div>
+                            <div class="stat"><span>Lifetime Earnings: </span><span id="stat-lifetime-money">$0</span></div>
+                            <div class="stat"><span>Achievements: </span><span id="stat-achievements">0/15</span></div>
+                            <div class="stat stat-button-container">
                                 <button id="reset-progress-button" class="button-reset">Reset Progress</button>
                             </div>
                         </div>
                         <div id="level-unlocks-list">
                             <!-- Level unlocks will be added here -->
                         </div>
-                        <!-- Removed stat-action div -->
                     </div>
                 </div>
             </div>
@@ -103,7 +121,7 @@
         </main>
 
         <footer>
-            <p>Airport Clicker - A Civ Clicker-inspired game about managing an airport</p>
+            <p>Airport Clicker — grow a runway shack into a spaceport empire</p>
         </footer>
     </div>
 
