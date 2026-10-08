@@ -132,12 +132,18 @@ function applySavedState(saved) {
     // bonuses are computed from purchased flags, not stored in the base.
     const scalarProps = [
         'money', 'passengers', 'reputation', 'totalFlights', 'totalPassengers',
-        'totalMoneyEarned', 'buyQuantity',
+        'totalMoneyEarned',
     ];
     for (const prop of scalarProps) {
         if (typeof saved[prop] === typeof gameState[prop]) {
             gameState[prop] = saved[prop];
         }
+    }
+
+    // buyQuantity is numeric (1/10/100) or the string 'max' — the generic
+    // type-check above would reject 'max' against the numeric default.
+    if (saved.buyQuantity === 'max' || (typeof saved.buyQuantity === 'number' && saved.buyQuantity >= 1)) {
+        gameState.buyQuantity = saved.buyQuantity;
     }
 
     // Level is recomputed in reconcileUnlocks (below) rather than

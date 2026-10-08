@@ -346,10 +346,15 @@ function maybeSpawnEvent(now) {
         gameState.totalPassengers += chosen.instantReputation * 10;
         gameState.passengers += chosen.instantReputation * 10;
         addNotification(`${chosen.name}: +${chosen.instantReputation} reputation — ${chosen.description}`, 'success');
-    } else if (chosen.instantPassengers) {
-        gameState.passengers += chosen.instantPassengers;
-        gameState.totalPassengers += chosen.instantPassengers;
-        addNotification(`${chosen.name}: +${chosen.instantPassengers} passengers — ${chosen.description}`, 'success');
+    } else if (chosen.instantPassengersSeconds || chosen.instantPassengers) {
+        const amount = Math.max(
+            chosen.minInstantPassengers || 0,
+            Math.ceil(chosen.instantPassengers ? chosen.instantPassengers
+                : rates.passengersPerSecond * chosen.instantPassengersSeconds)
+        );
+        gameState.passengers += amount;
+        gameState.totalPassengers += amount;
+        addNotification(`${chosen.name}: +${amount.toLocaleString()} passengers — ${chosen.description}`, 'success');
     }
 }
 

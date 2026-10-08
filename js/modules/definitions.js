@@ -346,9 +346,10 @@ export const eventDefinitions = [
     {
         id: 'school-tour',
         name: 'School Tour',
-        description: 'A busload of future pilots tours the airport. +200 passengers.',
+        description: 'A busload of future pilots tours the airport. +45s of passenger production.',
         type: 'instant',
-        instantPassengers: 200,
+        instantPassengersSeconds: 45,
+        minInstantPassengers: 30,
         weight: 2,
         polarity: 'good',
     },
