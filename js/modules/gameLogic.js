@@ -79,7 +79,9 @@ export function handleMainClick() {
 
 export function startGameLoop() {
     lastTickTime = Date.now();
-    scheduleNextEvent(Date.now() + 30000); // first event after ~30s+
+    // First event arrives early (25-45s) to introduce the mechanic, then
+    // settles into the normal 45-100s cadence.
+    nextEventAt = Date.now() + (25 + Math.random() * 20) * 1000;
     return setInterval(gameLoop, TICK_MS);
 }
 
@@ -301,6 +303,12 @@ function scheduleNextEvent(now) {
     nextEventAt = now + (EVENT_MIN_INTERVAL + Math.random() * (EVENT_MAX_INTERVAL - EVENT_MIN_INTERVAL)) * 1000;
 }
 
+// After a reset the player has seen events before — keep the early first
+// roll so the mechanic resurfaces quickly.
+function scheduleFirstEvent(now) {
+    nextEventAt = now + (25 + Math.random() * 20) * 1000;
+}
+
 function expireEvents(now) {
     const before = gameState.activeEvents.length;
     gameState.activeEvents = gameState.activeEvents.filter(e => e.endsAt > now);
@@ -385,7 +393,7 @@ export function resetProgress() {
     resetState();
     ticksSinceSave = 0;
     lastTickTime = Date.now();
-    scheduleNextEvent(Date.now() + 30000);
+    scheduleFirstEvent(Date.now());
     refreshAll();
     addNotification('Game progress reset.', 'warning');
 }
