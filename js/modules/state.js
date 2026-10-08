@@ -98,19 +98,32 @@ export function loadGame() {
         return { loaded: false, migrated: false, offlineEarnings: null };
     }
 
-    const migrated = parsed.version !== SAVE_VERSION;
-    applySavedState(parsed);
-    reconcileUnlocks();
-
-    const offlineEarnings = computeOfflineEarnings(parsed.savedAt);
-    if (offlineEarnings) {
-        gameState.money += offlineEarnings.money;
-        gameState.passengers += offlineEarnings.passengers;
-        gameState.totalPassengers += offlineEarnings.passengers;
-        gameState.totalMoneyEarned += offlineEarnings.money;
+    // A syntactically valid save can still be unusable (e.g. the literal
+    // `null`, or entries with hostile shapes) — treat it as corrupt.
+    if (!parsed || typeof parsed !== 'object') {
+        try { localStorage.removeItem(SAVE_KEY); } catch (_) { /* ignore */ }
+        return { loaded: false, migrated: false, offlineEarnings: null };
     }
 
-    return { loaded: true, migrated, offlineEarnings };
+    const migrated = parsed.version !== SAVE_VERSION;
+    try {
+        applySavedState(parsed);
+        reconcileUnlocks();
+
+        const offlineEarnings = computeOfflineEarnings(parsed.savedAt);
+        if (offlineEarnings) {
+            gameState.money += offlineEarnings.money;
+            gameState.passengers += offlineEarnings.passengers;
+            gameState.totalPassengers += offlineEarnings.passengers;
+            gameState.totalMoneyEarned += offlineEarnings.money;
+        }
+        return { loaded: true, migrated, offlineEarnings };
+    } catch (e) {
+        console.error('Failed to apply save:', e);
+        try { localStorage.removeItem(SAVE_KEY); } catch (_) { /* ignore */ }
+        resetState();
+        return { loaded: false, migrated: false, offlineEarnings: null };
+    }
 }
 
 // Merges a parsed save (v1 or v2) into the live gameState.
@@ -127,11 +140,8 @@ function applySavedState(saved) {
         }
     }
 
-    // Recompute level from reputation rather than trusting the save —
-    // thresholds may have changed between versions.
-    if (typeof saved.reputation === 'number') {
-        gameState.airportLevel = levelForReputation(saved.reputation);
-    }
+    // Level is recomputed in reconcileUnlocks (below) rather than
+    // trusting the save — thresholds may have changed between versions.
 
     for (const key of ['buildings', 'staff']) {
         if (!Array.isArray(saved[key])) continue;
@@ -157,19 +167,19 @@ function applySavedState(saved) {
     }
 }
 
-// Unlocked flags are derived from the current level (definitions carry
-// unlockLevel), so recompute them instead of trusting stale saved flags.
+// Unlocked flags are derived from the final level (definitions carry
+// unlockLevel), so settle reputation/level BEFORE computing them —
+// saved passengers can imply a higher level than saved reputation
+// (older saves used a different passengers-per-reputation rate).
 function reconcileUnlocks() {
+    gameState.reputation = Math.max(gameState.reputation, reputationForPassengers(gameState.totalPassengers));
+    gameState.airportLevel = levelForReputation(gameState.reputation);
     const level = gameState.airportLevel;
     for (const list of [gameState.buildings, gameState.staff, gameState.upgrades]) {
         for (const item of list) {
             item.unlocked = level >= (item.unlockLevel || 1);
         }
     }
-    // Keep reputation consistent with the passenger count (older saves
-    // used a different passengers-per-reputation rate).
-    gameState.reputation = Math.max(gameState.reputation, reputationForPassengers(gameState.totalPassengers));
-    gameState.airportLevel = levelForReputation(gameState.reputation);
 }
 
 function computeOfflineEarnings(savedAt) {

@@ -21,6 +21,7 @@ global.document = {
 global.window = { addEventListener: () => {} };
 global.confirm = () => true;
 
+const { jest } = await import('@jest/globals');
 const { gameState, resetState, saveGame, loadGame } = await import('./js/modules/state.js');
 const economy = await import('./js/modules/economy.js');
 const logic = await import('./js/modules/gameLogic.js');
@@ -447,6 +448,14 @@ describe('persistence', () => {
         expect(computeClickValue(gameState).passengers).toBeCloseTo(2);
         // Level is recomputed from reputation/passengers, not trusted.
         expect(gameState.airportLevel).toBe(levelForReputation(gameState.reputation));
+        // Unlock flags follow the FINAL level: 420 passengers -> rep 42
+        // -> level 2, so level-2 content is unlocked even though the
+        // saved reputation only implied level 1.
+        expect(gameState.airportLevel).toBe(2);
+        const level2Def = buildingDefinitions.find(d => d.unlockLevel === 2);
+        expect(gameState.buildings.find(b => b.id === level2Def.id).unlocked).toBe(true);
+        const level3Def = buildingDefinitions.find(d => d.unlockLevel === 3);
+        expect(gameState.buildings.find(b => b.id === level3Def.id).unlocked).toBe(false);
     });
 
     test('returns not-loaded for empty storage and survives corrupt saves', () => {
@@ -456,5 +465,43 @@ describe('persistence', () => {
 
         store['airportClickerSave'] = '{not json';
         expect(loadGame().loaded).toBe(false);
+
+        // Syntactically valid but unusable: `null` used to crash on
+        // `parsed.version` and abort startup on every reload.
+        store['airportClickerSave'] = 'null';
+        expect(loadGame().loaded).toBe(false);
+        expect(store['airportClickerSave']).toBeUndefined();
+
+        // Malformed collection entries: the merge must not throw.
+        store['airportClickerSave'] = JSON.stringify({ version: 2, buildings: [null] });
+        expect(loadGame().loaded).toBe(false);
+        expect(store['airportClickerSave']).toBeUndefined();
+    });
+});
+
+describe('timed event crediting', () => {
+    test('a tick spanning an event boundary credits each segment at its own rate', () => {
+        jest.useFakeTimers();
+        try {
+            freshState();
+            gameState.buildings.find(b => b.id === 'terminal').owned = 1;
+
+            const t0 = Date.now();
+            jest.setSystemTime(t0);
+            logic.gameLoop(); // anchors lastTickTime to t0 (may spawn one event)
+            const moneyAfterSync = gameState.money;
+
+            // +50% Clear Skies that ends halfway through the next tick.
+            gameState.activeEvents = [{ id: 'clear-skies', endsAt: t0 + 15000 }];
+
+            jest.setSystemTime(t0 + 30000); // still before the next spawn (>=45s)
+            logic.gameLoop();
+
+            const base = computeRates(gameState, { moneyMult: 1, passengersMult: 1 }).moneyPerSecond;
+            const expected = base * (15 * 1.5 + 15 * 1.0);
+            expect(gameState.money - moneyAfterSync).toBeCloseTo(expected, 5);
+        } finally {
+            jest.useRealTimers();
+        }
     });
 });

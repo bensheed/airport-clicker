@@ -19,16 +19,33 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-    let filePath = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    let filePath;
+    try {
+        filePath = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    } catch {
+        // Malformed percent-encoding (e.g. /%ZZ) — reject instead of crashing.
+        res.writeHead(400);
+        res.end('Bad Request');
+        return;
+    }
 
     // Default to index.html for root path
     if (filePath === '/') {
         filePath = '/index.html';
     }
 
-    // Prevent directory traversal outside the project root
+    // Prevent directory traversal outside the project root. Compare
+    // against `__dirname + sep` so sibling dirs like `airport-clicker-x`
+    // don't pass a bare startsWith check.
     const resolved = path.normalize(path.join(__dirname, filePath));
-    if (!resolved.startsWith(__dirname)) {
+    const insideRoot = resolved === __dirname || resolved.startsWith(__dirname + path.sep);
+
+    // Never serve dot-segments (.git, .env, ...) or node_modules contents.
+    const hasPrivateSegment = path.relative(__dirname, resolved)
+        .split(path.sep)
+        .some(seg => seg.startsWith('.') || seg === 'node_modules');
+
+    if (!insideRoot || hasPrivateSegment) {
         res.writeHead(403);
         res.end('Forbidden');
         return;

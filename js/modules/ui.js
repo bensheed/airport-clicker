@@ -340,15 +340,24 @@ export function updateButtonStates() {
             if (item && item.unlocked) {
                 const atCap = item.id === 'runway' && item.owned >= MAX_RUNWAYS;
                 if (!atCap) {
-                    const qty = quantityLabel(item, getBuildingScaling(item));
-                    disabled = money < getBulkCost(item.baseCost, getBuildingScaling(item), item.owned, qty);
+                    const scaling = getBuildingScaling(item);
+                    const qty = quantityLabel(item, scaling);
+                    const cost = getBulkCost(item.baseCost, scaling, item.owned, qty);
+                    disabled = money < cost;
+                    if (gameState.buyQuantity === 'max') {
+                        button.textContent = `Buy ×${qty} — $${formatNumber(cost)}`;
+                    }
                 }
             }
         } else if (staffId) {
             const item = gameState.staff.find(s => s.id === staffId);
             if (item && item.unlocked) {
                 const qty = quantityLabel(item, STAFF_COST_SCALING);
-                disabled = money < getBulkCost(item.baseCost, STAFF_COST_SCALING, item.owned, qty);
+                const cost = getBulkCost(item.baseCost, STAFF_COST_SCALING, item.owned, qty);
+                disabled = money < cost;
+                if (gameState.buyQuantity === 'max') {
+                    button.textContent = `Buy ×${qty} — $${formatNumber(cost)}`;
+                }
             }
         } else if (upgradeId) {
             const item = gameState.upgrades.find(u => u.id === upgradeId);

@@ -70,6 +70,7 @@ export function handleMainClick() {
     showClickFeedback(money, passengers);
     updateButtonStates();
     updateTabBadges();
+    renderStats();
     checkLevelUp();
     checkAchievements();
 }
@@ -88,6 +89,10 @@ export function gameLoop() {
     const deltaSeconds = Math.max(0, (now - lastTickTime) / 1000);
     lastTickTime = now;
 
+    accruePassiveIncome(deltaSeconds, now);
+
+    // Expire/spawn only after the elapsed interval has been credited so a
+    // new event can't retro-modify time before it started.
     expireEvents(now);
     maybeSpawnEvent(now);
 
@@ -96,16 +101,11 @@ export function gameLoop() {
     gameState.moneyPerSecond = rates.moneyPerSecond;
     gameState.passengersPerSecond = rates.passengersPerSecond;
 
-    gameState.money += rates.moneyPerSecond * deltaSeconds;
-    gameState.passengers += rates.passengersPerSecond * deltaSeconds;
-    gameState.totalPassengers += rates.passengersPerSecond * deltaSeconds;
-    gameState.totalMoneyEarned += rates.moneyPerSecond * deltaSeconds;
-    syncReputation();
-
     updateResourceDisplay();
     updateButtonStates();
     updateTabBadges();
     renderEventBanner(); // countdown seconds tick down
+    renderStats(); // keep an open Stats tab live
     checkLevelUp();
     checkAchievements();
 
@@ -113,6 +113,31 @@ export function gameLoop() {
         ticksSinceSave = 0;
         saveGame();
     }
+}
+
+// Credit elapsed production in segments split at timed-event boundaries.
+// A throttled tick can span an event's start/end; applying one end-state
+// modifier to the whole interval would misprice the elapsed time.
+function accruePassiveIncome(deltaSeconds, now) {
+    let cursor = now - deltaSeconds * 1000;
+    let remaining = deltaSeconds;
+    while (remaining > 0) {
+        const mods = getEventModifiers(gameState.activeEvents, eventDefinitions, cursor);
+        let boundary = now;
+        for (const e of gameState.activeEvents) {
+            if (e.endsAt > cursor && e.endsAt < boundary) boundary = e.endsAt;
+        }
+        const segSeconds = Math.min(remaining, Math.max(0, (boundary - cursor) / 1000));
+        if (segSeconds <= 0) break;
+        const rates = computeRates(gameState, mods);
+        gameState.money += rates.moneyPerSecond * segSeconds;
+        gameState.passengers += rates.passengersPerSecond * segSeconds;
+        gameState.totalPassengers += rates.passengersPerSecond * segSeconds;
+        gameState.totalMoneyEarned += rates.moneyPerSecond * segSeconds;
+        cursor += segSeconds * 1000;
+        remaining -= segSeconds;
+    }
+    syncReputation();
 }
 
 function syncReputation() {
