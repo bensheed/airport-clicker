@@ -2,7 +2,7 @@
 
 # Airport Clicker
 
-A Civilization Clicker-inspired incremental game about growing a tiny airfield into a spaceport empire.
+An incremental game inspired by [CivClicker](https://kastark.co.uk/games/civclicker/) (David Holley, GPL). Grow a tiny airfield into a spaceport empire.
 
 ## Game Overview
 

@@ -1,7 +1,7 @@
 {
   "name": "airport-clicker",
   "version": "2.0.0",
-  "description": "A Civilization Clicker-inspired incremental game about growing and managing an airport.",
+  "description": "A CivClicker-inspired incremental game about growing and managing an airport.",
   "type": "module",
   "main": "game.js",
   "scripts": {
