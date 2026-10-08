@@ -1,119 +1,402 @@
-// Import dependencies for applyUpgrade functions
-import { gameState } from './state.js';
-import { addNotification } from './ui.js';
+// definitions.js — static game content. Pure data only:
+// everything here is JSON-safe, so deep copies for gameState and
+// save files never lose information (fixes the old bug where
+// applyUpgrade functions were stripped by JSON serialization).
+//
+// Effect schema (see economy.js applyTarget):
+//   { target: 'clickMoney'|'clickPassengers'|'buildingMoney'|'buildingPassengers'
+//           |'allMoney'|'allPassengers'|'all'|'building:<id>', factor: n }
+// Staff effects are per-staff-member: factor^owned.
+// Upgrade effects apply once when purchased.
 
-// Building definitions
+import { MAX_RUNWAYS } from './economy.js';
+
+// ---------- Buildings ----------
+// baseCost: $ for the first one. Costs scale ^owned (1.15, runways 2.2).
+// unlockLevel: airport level required to buy.
 export const buildingDefinitions = [
     {
         id: 'runway',
         name: 'Runway',
-        description: 'Allows planes to land and take off. Each runway multiplies the effectiveness of others! (Max: 8)',
-        baseCost: 5,
-        costScalingFactor: 2.5, // Special higher scaling factor for runways
-        moneyPerSecond: 0.5,
+        description: `Planes can't land on ambition alone. Each runway also boosts every other building's output by 10%. (Max: ${MAX_RUNWAYS})`,
+        baseCost: 8,
+        costScalingFactor: 2.2,
+        moneyPerSecond: 0.8,
         passengersPerSecond: 0.2,
         owned: 0,
-        unlocked: true
+        unlocked: true,
+        unlockLevel: 1,
     },
     {
         id: 'terminal',
         name: 'Terminal',
-        description: 'Processes passengers and provides shopping',
-        baseCost: 50,
-        moneyPerSecond: 2,
+        description: 'Processes passengers and houses shops and gates',
+        baseCost: 60,
+        moneyPerSecond: 2.5,
         passengersPerSecond: 1,
         owned: 0,
-        unlocked: true
+        unlocked: true,
+        unlockLevel: 1,
     },
     {
         id: 'hangar',
         name: 'Hangar',
-        description: 'Stores and maintains aircraft',
-        baseCost: 200,
-        moneyPerSecond: 5,
-        passengersPerSecond: 0.5,
+        description: 'Stores and maintains aircraft between flights',
+        baseCost: 300,
+        moneyPerSecond: 8,
+        passengersPerSecond: 0.4,
         owned: 0,
-        unlocked: true
+        unlocked: true,
+        unlockLevel: 1,
     },
     {
         id: 'control-tower',
         name: 'Control Tower',
-        description: 'Manages air traffic',
-        baseCost: 1000,
-        moneyPerSecond: 15,
-        passengersPerSecond: 3,
+        description: 'Manages air traffic, allowing denser flight schedules',
+        baseCost: 1200,
+        moneyPerSecond: 25,
+        passengersPerSecond: 2,
         owned: 0,
-        unlocked: false
+        unlocked: false,
+        unlockLevel: 2,
     },
     {
         id: 'parking-garage',
         name: 'Parking Garage',
-        description: 'Provides parking for passengers',
+        description: 'Parking fees: the real reason airports exist',
         baseCost: 5000,
-        moneyPerSecond: 50,
-        passengersPerSecond: 10,
+        moneyPerSecond: 80,
+        passengersPerSecond: 1.5,
         owned: 0,
-        unlocked: false
-    }
+        unlocked: false,
+        unlockLevel: 3,
+    },
+    {
+        id: 'cargo-terminal',
+        name: 'Cargo Terminal',
+        description: 'Freight pays better than passengers ever will',
+        baseCost: 20000,
+        moneyPerSecond: 250,
+        passengersPerSecond: 3,
+        owned: 0,
+        unlocked: false,
+        unlockLevel: 4,
+    },
+    {
+        id: 'hotel',
+        name: 'Airport Hotel',
+        description: 'Captures layover spending day and night',
+        baseCost: 90000,
+        moneyPerSecond: 700,
+        passengersPerSecond: 12,
+        owned: 0,
+        unlocked: false,
+        unlockLevel: 5,
+    },
+    {
+        id: 'fuel-depot',
+        name: 'Fuel Depot',
+        description: 'Sells jet fuel to every airline on the tarmac',
+        baseCost: 400000,
+        moneyPerSecond: 2000,
+        passengersPerSecond: 5,
+        owned: 0,
+        unlocked: false,
+        unlockLevel: 6,
+    },
+    {
+        id: 'duty-free-mall',
+        name: 'Duty-Free Mall',
+        description: 'A shopping mall that happens to have planes attached',
+        baseCost: 1500000,
+        moneyPerSecond: 7000,
+        passengersPerSecond: 25,
+        owned: 0,
+        unlocked: false,
+        unlockLevel: 7,
+    },
+    {
+        id: 'spaceport',
+        name: 'Spaceport',
+        description: 'Suborbital hops for the extremely wealthy',
+        baseCost: 8000000,
+        moneyPerSecond: 25000,
+        passengersPerSecond: 80,
+        owned: 0,
+        unlocked: false,
+        unlockLevel: 8,
+    },
 ];
 
-// Staff definitions
+// ---------- Staff ----------
+// effect.factor applies per staff member (factor^owned).
 export const staffDefinitions = [
     {
         id: 'pilot',
         name: 'Pilot',
-        description: 'Flies the planes',
-        baseCost: 25,
-        clickMultiplier: 1.02, // Reduced from 1.2 to 1.02 (2% bonus)
+        description: 'Flies the planes. +4% money per flight, per pilot',
+        baseCost: 40,
+        effect: { target: 'clickMoney', factor: 1.04 },
         owned: 0,
-        unlocked: true
+        unlocked: true,
+        unlockLevel: 1,
     },
     {
         id: 'flight-attendant',
         name: 'Flight Attendant',
-        description: 'Takes care of passengers',
-        baseCost: 100,
-        clickMultiplier: 1.05, // Reduced from 1.5 to 1.05 (5% bonus)
+        description: 'Takes care of passengers. +8% passengers per flight, per attendant',
+        baseCost: 120,
+        effect: { target: 'clickPassengers', factor: 1.08 },
         owned: 0,
-        unlocked: true
+        unlocked: true,
+        unlockLevel: 1,
+    },
+    {
+        id: 'ground-crew',
+        name: 'Ground Crew',
+        description: 'Faster turnarounds. +3% passenger production, per crew member',
+        baseCost: 350,
+        effect: { target: 'buildingPassengers', factor: 1.03 },
+        owned: 0,
+        unlocked: false,
+        unlockLevel: 2,
     },
     {
         id: 'mechanic',
         name: 'Mechanic',
-        description: 'Maintains aircraft',
-        baseCost: 500,
-        clickMultiplier: 1.10, // Reduced from 2 to 1.10 (10% bonus)
+        description: 'Keeps aircraft in the air. +5% building income, per mechanic',
+        baseCost: 900,
+        effect: { target: 'buildingMoney', factor: 1.05 },
         owned: 0,
-        unlocked: false
-    }
+        unlocked: false,
+        unlockLevel: 2,
+    },
+    {
+        id: 'security-officer',
+        name: 'Security Officer',
+        description: 'Keeps the airport safe. +4% passenger production and reduces the chance of security incidents',
+        baseCost: 4000,
+        effect: { target: 'buildingPassengers', factor: 1.04 },
+        owned: 0,
+        unlocked: false,
+        unlockLevel: 3,
+    },
+    {
+        id: 'air-traffic-controller',
+        name: 'Air Traffic Controller',
+        description: 'Sequences every arrival and departure. +4% to ALL money income, per controller',
+        baseCost: 15000,
+        effect: { target: 'allMoney', factor: 1.04 },
+        owned: 0,
+        unlocked: false,
+        unlockLevel: 4,
+    },
 ];
 
-// Upgrade definitions
+// ---------- Upgrades ----------
+// One-time purchases. effect applies immediately and permanently.
 export const upgradeDefinitions = [
     {
         id: 'better-seats',
         name: 'Better Seats',
-        description: 'Improves passenger comfort',
-        cost: 200,
-        effect: 'Doubles passengers per click',
+        description: 'Passengers pay more willingly when their knees fit',
+        cost: 150,
+        effect: { target: 'clickPassengers', factor: 2 },
+        effectText: 'Doubles passengers per flight',
         purchased: false,
         unlocked: true,
-        applyUpgrade: () => {
-            gameState.passengersPerClick *= 2;
-            addNotification('Upgrade purchased: Better Seats', 'success');
-        }
+        unlockLevel: 1,
     },
     {
         id: 'faster-check-in',
         name: 'Faster Check-in',
-        description: 'Speeds up passenger processing',
-        cost: 500,
-        effect: 'Increases money per click by 50%',
+        description: 'Self-service kiosks cut the lines',
+        cost: 300,
+        effect: { target: 'clickMoney', factor: 2 },
+        effectText: 'Doubles money per flight',
         purchased: false,
         unlocked: true,
-        applyUpgrade: () => {
-            gameState.clickValue *= 1.5;
-            addNotification('Upgrade purchased: Faster Check-in', 'success');
-        }
-    }
+        unlockLevel: 1,
+    },
+    {
+        id: 'moving-walkways',
+        name: 'Moving Walkways',
+        description: 'Passengers glide past the shops instead of walking by them',
+        cost: 2500,
+        effect: { target: 'building:terminal', factor: 2 },
+        effectText: 'Doubles all Terminal output',
+        purchased: false,
+        unlocked: false,
+        unlockLevel: 2,
+    },
+    {
+        id: 'radar-system',
+        name: 'Advanced Radar',
+        description: 'See everything, land everything',
+        cost: 8000,
+        effect: { target: 'building:control-tower', factor: 2 },
+        effectText: 'Doubles all Control Tower output',
+        purchased: false,
+        unlocked: false,
+        unlockLevel: 3,
+    },
+    {
+        id: 'premium-lounges',
+        name: 'Premium Lounges',
+        description: 'Champagne and power outlets for business class',
+        cost: 20000,
+        effect: { target: 'clickMoney', factor: 3 },
+        effectText: 'Triples money per flight',
+        purchased: false,
+        unlocked: false,
+        unlockLevel: 4,
+    },
+    {
+        id: 'automated-baggage',
+        name: 'Automated Baggage System',
+        description: 'Robots never lose a suitcase',
+        cost: 60000,
+        effect: { target: 'buildingMoney', factor: 1.5 },
+        effectText: '+50% income from all buildings',
+        purchased: false,
+        unlocked: false,
+        unlockLevel: 4,
+    },
+    {
+        id: 'international-gates',
+        name: 'International Gates',
+        description: 'Customs and immigration open the floodgates',
+        cost: 150000,
+        effect: { target: 'allPassengers', factor: 2 },
+        effectText: 'Doubles all passenger gains',
+        purchased: false,
+        unlocked: false,
+        unlockLevel: 5,
+    },
+    {
+        id: 'duty-free-contracts',
+        name: 'Duty-Free Contracts',
+        description: 'Luxury brands pay a premium for your foot traffic',
+        cost: 500000,
+        effect: { target: 'allMoney', factor: 2 },
+        effectText: 'Doubles ALL money income',
+        purchased: false,
+        unlocked: false,
+        unlockLevel: 6,
+    },
+    {
+        id: 'boarding-pass-app',
+        name: 'Boarding Pass App',
+        description: 'Your airport, now with push notifications',
+        cost: 1200000,
+        effect: { target: 'clickMoney', factor: 5 },
+        effectText: '5x money per flight',
+        purchased: false,
+        unlocked: false,
+        unlockLevel: 7,
+    },
+    {
+        id: 'galactic-scheduling',
+        name: 'Galactic Scheduling',
+        description: 'Orbit slots negotiated with three space agencies',
+        cost: 10000000,
+        effect: { target: 'all', factor: 3 },
+        effectText: 'Triples EVERYTHING',
+        purchased: false,
+        unlocked: false,
+        unlockLevel: 9,
+    },
+];
+
+// ---------- Random events ----------
+// type 'timed': modifiers apply while active for `duration` seconds.
+// type 'instant': one-shot effect resolved when the event fires.
+// weight: relative chance. polarity 'bad' events get suppressed by security officers.
+export const eventDefinitions = [
+    {
+        id: 'vip-charter',
+        name: 'VIP Charter',
+        description: 'A celebrity chartered a private flight! Instant windfall.',
+        type: 'instant',
+        instantMoneySeconds: 60, // grants money equal to N seconds of current production
+        minInstantMoney: 50,
+        weight: 3,
+        polarity: 'good',
+    },
+    {
+        id: 'clear-skies',
+        name: 'Clear Skies',
+        description: 'Perfect weather — flight operations +50% for 60s.',
+        type: 'timed',
+        duration: 60,
+        moneyMult: 1.5,
+        passengersMult: 1.5,
+        weight: 3,
+        polarity: 'good',
+    },
+    {
+        id: 'celebrity-visit',
+        name: 'Celebrity Visit',
+        description: 'A pop star posted from your terminal! +15 reputation.',
+        type: 'instant',
+        instantReputation: 15,
+        weight: 2,
+        polarity: 'good',
+    },
+    {
+        id: 'school-tour',
+        name: 'School Tour',
+        description: 'A busload of future pilots tours the airport. +200 passengers.',
+        type: 'instant',
+        instantPassengers: 200,
+        weight: 2,
+        polarity: 'good',
+    },
+    {
+        id: 'weather-delay',
+        name: 'Weather Delay',
+        description: 'Storms roll in — all production -40% for 45s.',
+        type: 'timed',
+        duration: 45,
+        moneyMult: 0.6,
+        passengersMult: 0.6,
+        weight: 2,
+        polarity: 'bad',
+    },
+    {
+        id: 'security-incident',
+        name: 'Security Incident',
+        description: 'A suspicious package slows screening — passenger flow -50% for 60s.',
+        type: 'timed',
+        duration: 60,
+        passengersMult: 0.5,
+        weight: 2,
+        polarity: 'bad',
+    },
+];
+
+// How often events are rolled, in seconds.
+export const EVENT_MIN_INTERVAL = 45;
+export const EVENT_MAX_INTERVAL = 100;
+// Each security officer multiplies the weight of 'bad' events by this.
+export const SECURITY_EVENT_REDUCTION = 0.85;
+
+// ---------- Achievements ----------
+// condition.stat is a key from economy.getAchievementStats().
+export const achievementDefinitions = [
+    { id: 'first-flight', name: 'Wheels Up', description: 'Operate your first flight', condition: { stat: 'flights', threshold: 1 } },
+    { id: 'ten-flights', name: 'Frequent Flyer', description: 'Operate 100 flights', condition: { stat: 'flights', threshold: 100 } },
+    { id: 'thousand-flights', name: 'Tower Veteran', description: 'Operate 1,000 flights', condition: { stat: 'flights', threshold: 1000 } },
+    { id: 'first-grand', name: 'First Payroll', description: 'Earn $1,000 lifetime', condition: { stat: 'lifetimeMoney', threshold: 1000 } },
+    { id: 'hundred-k', name: 'Regional Hub', description: 'Earn $100,000 lifetime', condition: { stat: 'lifetimeMoney', threshold: 100000 } },
+    { id: 'ten-million', name: 'International Player', description: 'Earn $10,000,000 lifetime', condition: { stat: 'lifetimeMoney', threshold: 10000000 } },
+    { id: 'first-building', name: 'Groundbreaking', description: 'Own 10 buildings', condition: { stat: 'buildings', threshold: 10 } },
+    { id: 'fifty-buildings', name: 'Sprawling Campus', description: 'Own 50 buildings', condition: { stat: 'buildings', threshold: 50 } },
+    { id: 'full-runways', name: 'All Eight Lanes', description: 'Operate the maximum 8 runways', condition: { stat: 'runways', threshold: 8 } },
+    { id: 'big-staff', name: 'Full Roster', description: 'Employ 25 staff members', condition: { stat: 'staff', threshold: 25 } },
+    { id: 'first-upgrade', name: 'Capital Improvement', description: 'Purchase an upgrade', condition: { stat: 'upgrades', threshold: 1 } },
+    { id: 'five-upgrades', name: 'Renovation Spree', description: 'Purchase 5 upgrades', condition: { stat: 'upgrades', threshold: 5 } },
+    { id: 'ten-k-pax', name: 'Small City', description: 'Serve 10,000 total passengers', condition: { stat: 'passengers', threshold: 10000 } },
+    { id: 'level-five', name: 'Class C Airport', description: 'Reach airport level 5', condition: { stat: 'level', threshold: 5 } },
+    { id: 'level-ten', name: 'Class A Airport', description: 'Reach airport level 10', condition: { stat: 'level', threshold: 10 } },
 ];

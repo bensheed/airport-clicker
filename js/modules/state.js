@@ -1,154 +1,191 @@
-// Import necessary definitions and UI functions (placeholders)
+// state.js — game state and persistence.
+// This module is deliberately UI-free: it never touches the DOM and never
+// imports ui.js, which keeps the module graph acyclic and lets tests import
+// it under plain Node.
+
 import { buildingDefinitions, staffDefinitions, upgradeDefinitions } from './definitions.js';
-import { addNotification, updateResourceDisplay, renderBuildings, renderStaff, renderUpgrades, updateButtonStates, updateTabBadges } from './ui.js'; // Assuming these will be in ui.js
+import {
+    computeRates,
+    levelForReputation,
+    reputationForPassengers,
+    BASE_CLICK_MONEY,
+    BASE_CLICK_PASSENGERS,
+} from './economy.js';
 
-// Game state
-export const gameState = {
-    money: 0,
-    passengers: 0,
-    reputation: 0,
-    totalFlights: 0,
-    totalPassengers: 0,
-    airportLevel: 1,
-    clickValue: 1,
-    passengersPerClick: 1,
-    moneyPerSecond: 0,
-    passengersPerSecond: 0,
-    buildings: [], // Will be initialized from definitions
-    staff: [],     // Will be initialized from definitions
-    upgrades: [],   // Will be initialized from definitions
-    clickCooldown: false
-};
+const SAVE_KEY = 'airportClickerSave';
+const SAVE_VERSION = 2;
 
-// Counter for periodic saving
-export let saveCounter = 0;
+// Offline earnings: 50% of normal rates, capped at 4 hours away.
+const OFFLINE_EFFICIENCY = 0.5;
+const OFFLINE_CAP_SECONDS = 4 * 60 * 60;
 
-export function incrementSaveCounter() {
-    saveCounter++;
+// ---------- State ----------
+
+export function createInitialState() {
+    return {
+        money: 0,
+        passengers: 0,
+        reputation: 0,
+        totalFlights: 0,
+        totalPassengers: 0,
+        totalMoneyEarned: 0,
+        airportLevel: 1,
+        clickValue: BASE_CLICK_MONEY,
+        passengersPerClick: BASE_CLICK_PASSENGERS,
+        moneyPerSecond: 0,
+        passengersPerSecond: 0,
+        buildings: deepCopy(buildingDefinitions),
+        staff: deepCopy(staffDefinitions),
+        upgrades: deepCopy(upgradeDefinitions),
+        activeEvents: [],   // [{ id, endsAt }]
+        achievements: [],   // earned achievement ids
+        buyQuantity: 1,     // 1 | 10 | 100 | 'max'
+        clickCooldown: false,
+    };
 }
 
-export function resetSaveCounter() {
-    saveCounter = 0;
+function deepCopy(value) {
+    return JSON.parse(JSON.stringify(value));
 }
 
+export const gameState = createInitialState();
 
-// Load game state from localStorage
-export function loadGame() {
-    try {
-        const savedStateJSON = localStorage.getItem('airportClickerSave');
-        if (savedStateJSON) {
-            const loadedState = JSON.parse(savedStateJSON);
-
-            // Carefully merge loaded state into default gameState structure
-            // Basic properties
-            const basicProps = ['money', 'passengers', 'reputation', 'totalFlights', 'totalPassengers', 'airportLevel', 'clickValue', 'passengersPerClick', 'moneyPerSecond', 'passengersPerSecond'];
-            basicProps.forEach(prop => {
-                if (loadedState.hasOwnProperty(prop) && typeof loadedState[prop] === typeof gameState[prop]) {
-                    gameState[prop] = loadedState[prop];
-                }
-            });
-
-            // Merge arrays (Buildings, Staff, Upgrades)
-            ['buildings', 'staff', 'upgrades'].forEach(key => {
-                if (Array.isArray(loadedState[key])) {
-                    // Ensure default definitions exist before attempting merge
-                    if (!Array.isArray(gameState[key])) {
-                         console.warn(`gameState.${key} is not an array during load, skipping merge for this key.`);
-                         return;
-                    }
-                    gameState[key].forEach(defaultItem => {
-                        const loadedItem = loadedState[key].find(item => item.id === defaultItem.id);
-                        if (loadedItem) {
-                            // Copy saved properties if they exist in the loaded data and the default item
-                            if (defaultItem.hasOwnProperty('owned') && loadedItem.hasOwnProperty('owned')) defaultItem.owned = loadedItem.owned;
-                            if (defaultItem.hasOwnProperty('purchased') && loadedItem.hasOwnProperty('purchased')) defaultItem.purchased = loadedItem.purchased;
-                            if (defaultItem.hasOwnProperty('unlocked') && loadedItem.hasOwnProperty('unlocked')) defaultItem.unlocked = loadedItem.unlocked;
-                        } // Keep default if not found in save
-                    });
-                }
-            });
-
-            console.log('Game loaded!');
-            return true; // Indicate that a save was loaded
-        } else {
-            console.log('No save game found.');
-        }
-    } catch (e) {
-        console.error("Failed to load game:", e);
-        // If loading fails, clear potentially corrupted save and start fresh
-        localStorage.removeItem('airportClickerSave');
-        addNotification('Error loading save game. Starting fresh.', 'error'); // Needs ui.js
-    }
-    return false; // Indicate no save was loaded or load failed
+// Restore gameState to a fresh game (does not touch storage or the DOM).
+export function resetState() {
+    Object.assign(gameState, createInitialState());
 }
 
-// Save game state to localStorage
+// ---------- Persistence ----------
+
 export function saveGame() {
-     // Create a slimmed-down version of gameState for saving
     const stateToSave = {
+        version: SAVE_VERSION,
+        savedAt: Date.now(),
         money: gameState.money,
         passengers: gameState.passengers,
         reputation: gameState.reputation,
         totalFlights: gameState.totalFlights,
         totalPassengers: gameState.totalPassengers,
-        airportLevel: gameState.airportLevel,
-        clickValue: gameState.clickValue,
-        passengersPerClick: gameState.passengersPerClick,
-        // Only save essential data for items that change
-        buildings: gameState.buildings.map(b => ({ id: b.id, owned: b.owned, unlocked: b.unlocked })),
-        staff: gameState.staff.map(s => ({ id: s.id, owned: s.owned, unlocked: s.unlocked })),
-        upgrades: gameState.upgrades.map(u => ({ id: u.id, purchased: u.purchased, unlocked: u.unlocked }))
+        totalMoneyEarned: gameState.totalMoneyEarned,
+        buyQuantity: gameState.buyQuantity,
+        achievements: [...gameState.achievements],
+        buildings: gameState.buildings.map(b => ({ id: b.id, owned: b.owned })),
+        staff: gameState.staff.map(s => ({ id: s.id, owned: s.owned })),
+        upgrades: gameState.upgrades.map(u => ({ id: u.id, purchased: u.purchased })),
     };
 
     try {
-        localStorage.setItem('airportClickerSave', JSON.stringify(stateToSave));
-        // console.log('Game saved.'); // Reduce console noise
+        localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
+        return true;
     } catch (e) {
-        console.error("Failed to save game:", e);
-        addNotification('Error saving game. Storage might be full or disabled.', 'error'); // Needs ui.js
+        console.error('Failed to save game:', e);
+        return false;
     }
 }
 
-// Reset game progress
-export function resetProgress() {
-    if (confirm("Are you sure you want to reset all progress? This cannot be undone.")) {
-        try {
-            localStorage.removeItem('airportClickerSave');
+// Loads saved state into gameState.
+// Returns { loaded, migrated, offlineEarnings } — offlineEarnings is
+// { money, passengers, seconds } or null. Never touches the DOM.
+export function loadGame() {
+    let parsed;
+    try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return { loaded: false, migrated: false, offlineEarnings: null };
+        parsed = JSON.parse(raw);
+    } catch (e) {
+        console.error('Failed to load game:', e);
+        try { localStorage.removeItem(SAVE_KEY); } catch (_) { /* ignore */ }
+        return { loaded: false, migrated: false, offlineEarnings: null };
+    }
 
-            // Reset gameState in memory to initial defaults
-            gameState.money = 0;
-            gameState.passengers = 0;
-            gameState.reputation = 0;
-            gameState.totalFlights = 0;
-            gameState.totalPassengers = 0;
-            gameState.airportLevel = 1;
-            gameState.clickValue = 1;
-            gameState.passengersPerClick = 1;
-            gameState.moneyPerSecond = 0;
-            gameState.passengersPerSecond = 0;
-            // Deep copy from original definitions again
-            gameState.buildings = JSON.parse(JSON.stringify(buildingDefinitions)); // Needs definitions.js
-            gameState.staff = JSON.parse(JSON.stringify(staffDefinitions));       // Needs definitions.js
-            gameState.upgrades = JSON.parse(JSON.stringify(upgradeDefinitions));     // Needs definitions.js
-            resetSaveCounter();
+    const migrated = parsed.version !== SAVE_VERSION;
+    applySavedState(parsed);
+    reconcileUnlocks();
 
-            // Re-render the entire UI (Needs ui.js)
-            updateResourceDisplay();
-            renderBuildings();
-            renderStaff();
-            renderUpgrades();
-            updateButtonStates();
-            updateTabBadges();
-            // Clear notifications
-            const notificationList = document.getElementById('notification-list');
-            if (notificationList) {
-                notificationList.innerHTML = '';
-            }
-            addNotification('Game progress reset.', 'warning');
-            console.log("Game reset complete.");
-        } catch (e) {
-            console.error("Failed to reset game:", e);
-            addNotification('Error resetting game progress.', 'error'); // Needs ui.js
+    const offlineEarnings = computeOfflineEarnings(parsed.savedAt);
+    if (offlineEarnings) {
+        gameState.money += offlineEarnings.money;
+        gameState.passengers += offlineEarnings.passengers;
+        gameState.totalPassengers += offlineEarnings.passengers;
+        gameState.totalMoneyEarned += offlineEarnings.money;
+    }
+
+    return { loaded: true, migrated, offlineEarnings };
+}
+
+// Merges a parsed save (v1 or v2) into the live gameState.
+function applySavedState(saved) {
+    // clickValue/passengersPerClick stay at their base values — upgrade
+    // bonuses are computed from purchased flags, not stored in the base.
+    const scalarProps = [
+        'money', 'passengers', 'reputation', 'totalFlights', 'totalPassengers',
+        'totalMoneyEarned', 'buyQuantity',
+    ];
+    for (const prop of scalarProps) {
+        if (typeof saved[prop] === typeof gameState[prop]) {
+            gameState[prop] = saved[prop];
         }
     }
+
+    // Recompute level from reputation rather than trusting the save —
+    // thresholds may have changed between versions.
+    if (typeof saved.reputation === 'number') {
+        gameState.airportLevel = levelForReputation(saved.reputation);
+    }
+
+    for (const key of ['buildings', 'staff']) {
+        if (!Array.isArray(saved[key])) continue;
+        for (const item of gameState[key]) {
+            const savedItem = saved[key].find(i => i.id === item.id);
+            if (savedItem && typeof savedItem.owned === 'number') {
+                item.owned = Math.max(0, Math.floor(savedItem.owned));
+            }
+        }
+    }
+
+    if (Array.isArray(saved.upgrades)) {
+        for (const upgrade of gameState.upgrades) {
+            const savedUpgrade = saved.upgrades.find(u => u.id === upgrade.id);
+            if (savedUpgrade && savedUpgrade.purchased === true) {
+                upgrade.purchased = true;
+            }
+        }
+    }
+
+    if (Array.isArray(saved.achievements)) {
+        gameState.achievements = saved.achievements.filter(id => typeof id === 'string');
+    }
+}
+
+// Unlocked flags are derived from the current level (definitions carry
+// unlockLevel), so recompute them instead of trusting stale saved flags.
+function reconcileUnlocks() {
+    const level = gameState.airportLevel;
+    for (const list of [gameState.buildings, gameState.staff, gameState.upgrades]) {
+        for (const item of list) {
+            item.unlocked = level >= (item.unlockLevel || 1);
+        }
+    }
+    // Keep reputation consistent with the passenger count (older saves
+    // used a different passengers-per-reputation rate).
+    gameState.reputation = Math.max(gameState.reputation, reputationForPassengers(gameState.totalPassengers));
+    gameState.airportLevel = levelForReputation(gameState.reputation);
+}
+
+function computeOfflineEarnings(savedAt) {
+    if (typeof savedAt !== 'number' || savedAt <= 0) return null;
+    const elapsedSeconds = Math.floor((Date.now() - savedAt) / 1000);
+    // Not worth reporting under a minute.
+    if (elapsedSeconds < 60) return null;
+
+    const effectiveSeconds = Math.min(elapsedSeconds, OFFLINE_CAP_SECONDS);
+    const rates = computeRates(gameState);
+    if (rates.moneyPerSecond <= 0 && rates.passengersPerSecond <= 0) return null;
+
+    return {
+        money: rates.moneyPerSecond * effectiveSeconds * OFFLINE_EFFICIENCY,
+        passengers: rates.passengersPerSecond * effectiveSeconds * OFFLINE_EFFICIENCY,
+        seconds: elapsedSeconds,
+        capped: elapsedSeconds > OFFLINE_CAP_SECONDS,
+    };
 }

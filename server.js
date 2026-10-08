@@ -1,8 +1,10 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const PORT = 12000; // Using allowed port for runtime environment
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PORT = process.env.PORT || 12000;
 
 const MIME_TYPES = {
     '.html': 'text/html',
@@ -17,53 +19,37 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-    console.log(`${req.method} ${req.url}`);
-    
-    // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    
-    // Handle OPTIONS request for CORS preflight
-    if (req.method === 'OPTIONS') {
-        res.writeHead(204);
-        res.end();
-        return;
-    }
-    
-    // Parse URL
-    let filePath = req.url;
-    
+    let filePath = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+
     // Default to index.html for root path
     if (filePath === '/') {
         filePath = '/index.html';
     }
-    
-    // Get the full path to the file
-    filePath = path.join(__dirname, filePath);
-    
-    // Get file extension
+
+    // Prevent directory traversal outside the project root
+    const resolved = path.normalize(path.join(__dirname, filePath));
+    if (!resolved.startsWith(__dirname)) {
+        res.writeHead(403);
+        res.end('Forbidden');
+        return;
+    }
+    filePath = resolved;
+
     const extname = path.extname(filePath);
-    
-    // Set default content type
-    let contentType = MIME_TYPES[extname] || 'application/octet-stream';
-    
-    // Read file
+    const contentType = MIME_TYPES[extname] || 'application/octet-stream';
+
     fs.readFile(filePath, (err, content) => {
         if (err) {
             if (err.code === 'ENOENT') {
-                // File not found
-                fs.readFile(path.join(__dirname, '404.html'), (err, content) => {
+                fs.readFile(path.join(__dirname, '404.html'), (err404, content404) => {
                     res.writeHead(404, { 'Content-Type': 'text/html' });
-                    res.end(content || '404 Not Found', 'utf-8');
+                    res.end(content404 || '404 Not Found', 'utf-8');
                 });
             } else {
-                // Server error
                 res.writeHead(500);
                 res.end(`Server Error: ${err.code}`);
             }
         } else {
-            // Success
             res.writeHead(200, { 'Content-Type': contentType });
             res.end(content, 'utf-8');
         }

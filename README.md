@@ -2,93 +2,75 @@
 
 # Airport Clicker
 
-A Civilization Clicker-inspired incremental game about growing and managing an airport.
+A Civilization Clicker-inspired incremental game about growing a tiny airfield into a spaceport empire.
 
 ## Game Overview
 
-In Airport Clicker, you start with a small airport and gradually expand it by:
-
-- Clicking the "Operate Flight" button to earn money and passengers
-- Building airport infrastructure like runways, terminals, and hangars
-- Hiring staff such as pilots, flight attendants, and mechanics
-- Purchasing upgrades to improve your airport's efficiency
-- Leveling up your airport to unlock new buildings, staff, and upgrades
-
-## Game Mechanics
+Click "Operate Flight" to earn money and passengers, then reinvest in buildings, staff, and upgrades. Lifetime passengers earn reputation, which levels up your airport and unlocks new content through level 12.
 
 ### Resources
 
-- **Money**: Used to purchase buildings, hire staff, and buy upgrades
-- **Passengers**: Represents the number of people using your airport
-- **Reputation**: Determines your airport's level and unlocks new content
+- **Money**: Spent on buildings, staff, and upgrades
+- **Passengers**: Accumulate from flights and buildings; lifetime passengers determine reputation
+- **Reputation**: `totalPassengers / 10` — drives your airport level
 
 ### Buildings
 
-Buildings provide passive income and resources:
-
-- **Runway**: Allows planes to land and take off
-- **Terminal**: Processes passengers and provides shopping
-- **Hangar**: Stores and maintains aircraft
-- **Control Tower**: Manages air traffic
-- **Parking Garage**: Provides parking for passengers
+| Building | Unlock | Role |
+|----------|--------|------|
+| Runway | L1 | Passive income; each one boosts all other buildings by +10% (max 8) |
+| Terminal | L1 | Passenger processing and shops |
+| Hangar | L1 | Aircraft maintenance income |
+| Control Tower | L2 | Dense flight schedules |
+| Parking Garage | L3 | Parking fees |
+| Cargo Terminal | L4 | Freight income |
+| Airport Hotel | L5 | Layover spending |
+| Fuel Depot | L6 | Fuel sales |
+| Duty-Free Mall | L7 | Retail empire |
+| Spaceport | L8 | Suborbital flights (endgame) |
 
 ### Staff
 
-Staff improve both active clicking and passive income:
-
-- **Pilot**: Flies the planes
-- **Flight Attendant**: Takes care of passengers
-- **Mechanic**: Maintains aircraft
-- **Security Officer**: Ensures airport safety
-- **Air Traffic Controller**: Manages air traffic
+- **Pilot**: +4% money per flight
+- **Flight Attendant**: +8% passengers per flight
+- **Ground Crew** (L2): +3% passenger production
+- **Mechanic** (L2): +5% building income
+- **Security Officer** (L3): +4% passenger production; reduces the chance of bad events
+- **Air Traffic Controller** (L4): +4% to all money income
 
 ### Upgrades
 
-One-time purchases that provide permanent bonuses:
+Ten one-time purchases with permanent effects — click multipliers, per-building boosts, and global multipliers, unlocked from level 1 through 9.
 
-- **Better Seats**: Improves passenger comfort
-- **Faster Check-in**: Speeds up passenger processing
-- **Premium Lounges**: Attracts wealthy passengers
-- **Automated Baggage System**: Improves baggage handling
-- **International Terminal**: Allows international flights
+### Events
 
-### Airport Levels
+Random events fire every ~45–100 seconds: VIP charters, clear skies, celebrity visits, school tours, weather delays, and security incidents. Timed events show as live chips above the flight button.
 
-As you gain reputation, your airport will level up, unlocking new content and opportunities.
+### Quality of life
 
-## How to Play
-
-1. Click the "Operate Flight" button to earn initial resources
-2. Use your money to purchase buildings and hire staff
-3. Balance your spending between immediate clicking bonuses and passive income
-4. Aim to level up your airport to unlock more advanced options
-5. Optimize your airport's efficiency to maximize growth
+- Bulk buying (×1 / ×10 / ×100 / Max)
+- Achievements (15 of them — see the Achievements tab)
+- Offline earnings at 50% rate, capped at 4 hours
+- Autosave every 15s and on exit; v1 saves migrate automatically
 
 ## Running the Game
 
-To run the game locally:
+```bash
+npm start          # serves http://localhost:12000
+# or any static server — the game is plain ES modules
+```
 
-1. Clone this repository
-2. Navigate to the project directory
-3. Run `node server.js` to start the server
-4. Open your browser and go to `http://localhost:51761`
+## Running Tests
 
-## Technologies Used
+```bash
+npm install
+npm test           # jest via Node's experimental VM modules (ESM)
+```
 
-- HTML5
-- CSS3
-- JavaScript (Vanilla)
-- Node.js (for the server)
+## Tech
 
-## Future Enhancements
-
-- More buildings, staff, and upgrades
-- Special events like weather delays or VIP passengers
-- Achievements system
-- Different types of aircraft with varying benefits
-- Airline partnerships
-- Offline progress
+Vanilla HTML/CSS/JS, ES modules, no build step. `js/modules/economy.js` is a pure, DOM-free core (costs, production rates, multipliers, levels, formatting) that the test suite exercises directly.
 
 ## License
 
-This project is open source and available under the MIT License.
+MIT

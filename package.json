@@ -1,10 +1,11 @@
 {
   "name": "airport-clicker",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A Civilization Clicker-inspired incremental game about growing and managing an airport.",
+  "type": "module",
   "main": "game.js",
   "scripts": {
-    "test": "jest",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "start": "node server.js"
   },
   "repository": {
