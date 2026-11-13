@@ -335,7 +335,7 @@ function maybeSpawnEvent(now) {
         // Replace an existing instance of the same event rather than stacking.
         gameState.activeEvents = gameState.activeEvents.filter(e => e.id !== chosen.id);
         gameState.activeEvents.push({ id: chosen.id, endsAt: now + chosen.duration * 1000 });
-        addNotification(`${chosen.name}: ${chosen.description}`, chosen.polarity === 'bad' ? 'warning' : 'info');
+        addNotification(`${chosen.name}: ${chosen.description}`, chosen.polarity === 'bad' ? 'warning' : 'info', chosen.id);
         renderEventBanner();
         return;
     }
@@ -346,14 +346,14 @@ function maybeSpawnEvent(now) {
         const amount = Math.max(chosen.minInstantMoney || 0, rates.moneyPerSecond * chosen.instantMoneySeconds);
         gameState.money += amount;
         gameState.totalMoneyEarned += amount;
-        addNotification(`${chosen.name}: +$${Math.floor(amount).toLocaleString()} — ${chosen.description}`, 'success');
+        addNotification(`${chosen.name}: +$${Math.floor(amount).toLocaleString()} — ${chosen.description}`, 'success', chosen.id);
     } else if (chosen.instantReputation) {
         gameState.reputation += chosen.instantReputation;
         // Reputation from events bypasses the passenger-derived value, so
         // keep a bonus pool: simplest is to also credit passengers.
         gameState.totalPassengers += chosen.instantReputation * 10;
         gameState.passengers += chosen.instantReputation * 10;
-        addNotification(`${chosen.name}: +${chosen.instantReputation} reputation — ${chosen.description}`, 'success');
+        addNotification(`${chosen.name}: +${chosen.instantReputation} reputation — ${chosen.description}`, 'success', chosen.id);
     } else if (chosen.instantPassengersSeconds || chosen.instantPassengers) {
         const amount = Math.max(
             chosen.minInstantPassengers || 0,
@@ -362,7 +362,7 @@ function maybeSpawnEvent(now) {
         );
         gameState.passengers += amount;
         gameState.totalPassengers += amount;
-        addNotification(`${chosen.name}: +${amount.toLocaleString()} passengers — ${chosen.description}`, 'success');
+        addNotification(`${chosen.name}: +${amount.toLocaleString()} passengers — ${chosen.description}`, 'success', chosen.id);
     }
 }
 

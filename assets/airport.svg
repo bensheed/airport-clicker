@@ -310,6 +310,42 @@
       <path d="M64 38v18l12 7" fill="none" stroke="#f6edce" stroke-width="4" stroke-linecap="round"/>
       <path d="m95 8 2 7 8 2-8 2-2 8-2-8-8-2 8-2zM26 25l2 5 5 1-5 2-2 5-1-5-6-2 6-1z" fill="#f2d28d"/>
     </symbol>
+    <symbol id="vip-charter" viewBox="0 0 128 112">
+      <use href="#plane" width="128" height="112"/>
+      <path d="m97 8 4 10 11 1-8 7 2 11-9-6-9 6 2-11-8-7 11-1z" fill="#dba657"/>
+    </symbol>
+    <symbol id="clear-skies" viewBox="0 0 128 112">
+      <circle cx="76" cy="40" r="24" fill="#e9bb64"/>
+      <path d="M76 4v7m0 58v7m36-36h-7m-58 0h-7m10-26 6 6m46 46-6-6m6-46-6 6m-46 46 6-6" stroke="#dba657" stroke-width="4" stroke-linecap="round"/>
+      <path d="M25 90a16 16 0 0 1-1-32 23 23 0 0 1 43-7 18 18 0 0 1 29 12 14 14 0 0 1 0 27z" fill="#e1ead0" stroke="#8fac91" stroke-width="2"/>
+    </symbol>
+    <symbol id="celebrity-visit" viewBox="0 0 128 112">
+      <path d="m64 9 14 27 30 5-22 22 5 31-27-14-27 14 5-31-22-22 30-5z" fill="#ecc77f" stroke="#c79555" stroke-width="2"/>
+      <path d="M39 47h20v13H43zm30 0h20l-4 13H69z" fill="#345a60"/>
+      <path d="M59 50h10m-15 20q10 8 20 0" fill="none" stroke="#345a60" stroke-width="3"/>
+    </symbol>
+    <symbol id="school-tour" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <rect x="14" y="28" width="97" height="55" rx="9" fill="#e8b765"/>
+      <path d="M21 35h20v23H21zm27 0h20v23H48zm27 0h25v23H75z" fill="#497372"/>
+      <path d="M24 38h14v6H24zm27 0h14v6H51zm27 0h19v6H78z" fill="#a3c3af"/>
+      <path d="M15 65h96" stroke="#ad7f4b" stroke-width="4"/>
+      <circle cx="35" cy="84" r="10" fill="#345557"/><circle cx="93" cy="84" r="10" fill="#345557"/>
+      <circle cx="35" cy="84" r="4" fill="#b5c3a9"/><circle cx="93" cy="84" r="4" fill="#b5c3a9"/>
+      <path d="M47 19h30v9H47z" fill="#d29b52"/>
+    </symbol>
+    <symbol id="weather-delay" viewBox="0 0 128 112">
+      <path d="M24 66a18 18 0 0 1 0-36 26 26 0 0 1 48-7 22 22 0 0 1 34 14 15 15 0 0 1-1 29z" fill="#77968f"/>
+      <path d="M34 78 25 94m40-16-9 16m40-16-9 16" stroke="#78a7a3" stroke-width="5" stroke-linecap="round"/>
+      <path d="m69 47-17 30h15l-7 20 26-32H71l11-18z" fill="#ecc77f"/>
+    </symbol>
+    <symbol id="security-incident" viewBox="0 0 128 112">
+      <path d="m64 9 40 16v31q-1 25-40 45Q25 81 24 56V25z" fill="#69998b"/>
+      <path d="m64 18 31 13v25q-1 20-31 35Q34 76 33 56V31z" fill="#dce3bd"/>
+      <path d="M47 48h34v29H47z" fill="#537b72"/>
+      <path d="M53 48V37a11 11 0 0 1 22 0v11" fill="none" stroke="#537b72" stroke-width="5"/>
+      <circle cx="64" cy="60" r="4" fill="#e5bc77"/><path d="M64 61v7" stroke="#e5bc77" stroke-width="3"/>
+    </symbol>
     <symbol id="medal" viewBox="0 0 128 112">
       <path d="m38 63-8 40 22-8 12 12 10-43zm27 0 9 44 13-12 18 8-12-40z" fill="#739e8b"/>
       <circle cx="65" cy="46" r="36" fill="#d79f5e"/>

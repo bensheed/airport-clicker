@@ -304,7 +304,7 @@ export function renderEventBanner() {
     banner.innerHTML = active.map(active => {
         const def = eventDefinitions.find(d => d.id === active.id);
         const secs = Math.max(0, Math.ceil((active.endsAt - now) / 1000));
-        return `<span class="event-chip ${def && def.polarity === 'bad' ? 'bad' : 'good'}">${def ? def.name : active.id} · ${secs}s</span>`;
+        return `<span class="event-chip ${def && def.polarity === 'bad' ? 'bad' : 'good'}">${def ? artIcon(def.id, 'event-art') : ''}${def ? def.name : active.id} · ${secs}s</span>`;
     }).join('');
 }
 
@@ -427,12 +427,22 @@ export function switchTab(tabId) {
 
 // ---------- Notifications & feedback ----------
 
-export function addNotification(message, type = 'info') {
+export function addNotification(message, type = 'info', artId = null) {
     const list = document.getElementById('notification-list');
     if (!list) return;
     const el = document.createElement('div');
     el.className = `notification ${type}`;
-    el.textContent = message;
+    if (artId) {
+        const icon = document.createElement('span');
+        icon.innerHTML = artIcon(artId, 'notification-art');
+        const text = document.createElement('span');
+        text.textContent = message;
+        el.appendChild(icon);
+        el.appendChild(text);
+        el.classList.add('illustrated-notification');
+    } else {
+        el.textContent = message;
+    }
     list.prepend(el);
     while (list.children.length > 12) {
         list.lastElementChild.remove();

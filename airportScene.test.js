@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import { readFileSync } from 'node:fs';
 import { createInitialState } from './js/modules/state.js';
-import { buildingDefinitions, staffDefinitions, upgradeDefinitions, achievementDefinitions } from './js/modules/definitions.js';
+import { buildingDefinitions, staffDefinitions, upgradeDefinitions, achievementDefinitions, eventDefinitions } from './js/modules/definitions.js';
 import { artIcon } from './js/modules/art.js';
 import { SCENE_LOTS, airportView, facilityTier, renderAirportScene, initAirportScene, launchFlight } from './js/modules/airportScene.js';
 
@@ -9,7 +9,7 @@ describe('original artwork', () => {
     const sheet = readFileSync(new URL('./assets/airport.svg', import.meta.url), 'utf8');
     const ids = [...sheet.matchAll(/<symbol id="([^"]+)"/g)].map(match => match[1]);
 
-    test.each([...buildingDefinitions, ...staffDefinitions, ...upgradeDefinitions, ...achievementDefinitions])('$id has an original sprite', item => {
+    test.each([...buildingDefinitions, ...staffDefinitions, ...upgradeDefinitions, ...achievementDefinitions, ...eventDefinitions])('$id has an original sprite', item => {
         expect(ids).toContain(item.id);
         expect(artIcon(item.id)).toContain(`assets/airport.svg#${item.id}`);
     });

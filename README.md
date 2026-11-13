@@ -61,7 +61,7 @@ Little River is an illustrated airport that grows with your saved purchases:
 - Each of the other nine building types has a reserved plot. Buying the first one adds it to the map; owning 10 and 25 adds extensions instead of overcrowding the scene.
 - Operating a flight launches an aircraft. A developed airport also has ambient departures, cargo aircraft, staff vehicles, and passengers.
 - Weather delays add storm shading and rain; clear skies brighten the scene. Selected upgrades add walkways, international gates, radar, and an orbital route.
-- Every building, staff role, upgrade, and achievement has matching original SVG art.
+- Every building, staff role, upgrade, achievement, and event has matching original SVG art.
 
 The map scrolls horizontally on small screens without shrinking the controls. A motion toggle persists separately from the save, and system reduced-motion preferences are always respected. The map has a text equivalent for screen readers. Animations are decorative: they do not change income or flight counts, and existing saves need no migration.
 
