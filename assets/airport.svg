@@ -1,0 +1,377 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 112">
+  <title>Airport Clicker original sprite collection</title>
+  <defs>
+    <symbol id="shadow" viewBox="0 0 128 112">
+      <ellipse cx="65" cy="96" rx="51" ry="10" fill="#173d3d" opacity=".12"/>
+    </symbol>
+    <symbol id="windows" viewBox="0 0 128 112">
+      <path d="M24 65h10v13H24zm17 0h10v13H41zm17 0h10v13H58zm17 0h10v13H75zm17 0h10v13H92z" fill="#245861"/>
+      <path d="M26 67h6v3h-6zm17 0h6v3h-6zm17 0h6v3h-6zm17 0h6v3h-6zm17 0h6v3h-6z" fill="#9ed9d7"/>
+    </symbol>
+    <symbol id="tree" viewBox="0 0 128 112">
+      <ellipse cx="68" cy="98" rx="27" ry="8" fill="#264c3f" opacity=".12"/>
+      <path d="M61 59h9v40h-9z" fill="#9a7960"/>
+      <path d="M65 8 30 63h16L30 83h70L84 63h16z" fill="#4d8971"/>
+      <path d="M65 8v75H30l16-20H30z" fill="#6a9e77"/>
+      <path d="m65 8-8 28h8z" fill="#a4c58b"/>
+    </symbol>
+    <symbol id="plane" viewBox="0 0 128 112">
+      <ellipse cx="66" cy="91" rx="43" ry="8" fill="#173d3d" opacity=".14"/>
+      <path d="m46 48-9-34 10-3 28 37zm0 15-9 34 10 3 28-37z" fill="#d3e6e1" stroke="#3c696b" stroke-width="2" stroke-linejoin="round"/>
+      <path d="m20 48-9-17 10-2 16 20zm0 15L11 80l10 2 16-20z" fill="#ea9258"/>
+      <path d="M12 48h81c12 0 25 5 25 8s-13 8-25 8H12l8-8z" fill="#fffaf0" stroke="#3c696b" stroke-width="2"/>
+      <path d="M25 58h68c9 0 17-1 24-2-2 4-14 8-24 8H12l8-8z" fill="#d5e4dd"/>
+      <path d="m100 49 8 4v6l-8 4zM34 51h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5z" fill="#245861"/>
+      <path d="m61 27 4 12h13l-7-12zm0 58 4-12h13l-7 12z" fill="#3d6f72"/>
+    </symbol>
+    <symbol id="cargo-plane" viewBox="0 0 128 112">
+      <use href="#plane" width="128" height="112"/>
+      <path d="M27 49h65v13H27z" fill="#df8655"/>
+      <path d="M33 52h16v7H33zm21 0h16v7H54zm21 0h11v7H75z" fill="#f4d3a4"/>
+    </symbol>
+    <symbol id="runway" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M12 30h104v60H12z" fill="#648c76"/>
+      <path d="M15 23h98v61H15z" fill="#476366"/>
+      <path d="M20 28h88v51H20z" fill="#385359"/>
+      <path d="M25 34v14m5-14v14m-5 11v14m5-14v14m69-39v14m5-14v14m-5 11v14m5-14v14M42 54h12m9 0h12m9 0h7" fill="none" stroke="#f8f4dc" stroke-width="3"/>
+      <path d="M39 84v9h16v-9m27 0v9h16v-9" fill="#b7b49a"/>
+      <path d="M12 25h4m96 0h4M12 80h4m96 0h4" stroke="#f0b355" stroke-width="4"/>
+    </symbol>
+    <symbol id="terminal" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M15 54h98v37H15z" fill="#e3d9bd"/>
+      <path d="M15 54h98v8H15z" fill="#c4bda6"/>
+      <path d="m10 54 12-25h84l12 25z" fill="#6faaa0"/>
+      <path d="m22 29-5 18h94l-5-18z" fill="#9ccbbb"/>
+      <path d="M35 33h59v9H35z" fill="#c6e4d5"/>
+      <use href="#windows" width="128" height="112"/>
+      <path d="M53 73h22v21H53z" fill="#f8f1dc"/>
+      <path d="M57 77h14v17H57z" fill="#245861"/>
+      <path d="M63 77h2v17h-2zM49 94h30v4H49z" fill="#b9b7a3"/>
+      <path d="M59 21h10v9H59z" fill="#e6a15c"/>
+      <path d="m64 10 2 6 7 1-5 4 1 6-5-3-5 3 1-6-5-4 7-1z" fill="#fff5d6"/>
+    </symbol>
+    <symbol id="hangar" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M17 47Q64-12 111 47v44H17z" fill="#e4d6b9"/>
+      <path d="M17 47Q64-12 111 47l-7 4Q64 6 24 51z" fill="#75a59b"/>
+      <path d="M27 50h74v41H27z" fill="#37575b"/>
+      <path d="M31 54h66v37H31z" fill="#608785"/>
+      <path d="M31 61h66m-66 8h66m-66 8h66m-66 8h66" stroke="#8db1a2" stroke-width="2"/>
+      <path d="M60 54h8v37h-8z" fill="#b4bca4"/>
+      <path d="M13 91h102v6H13z" fill="#c2c1aa"/>
+      <path d="M55 31h18v9H55z" fill="#f7eed3"/>
+      <path d="M62 32h4v7h-4zM59 34h10v3H59z" fill="#d68e54"/>
+    </symbol>
+    <symbol id="control-tower" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M49 45h30l8 50H41z" fill="#e8dfc6"/>
+      <path d="M64 45h15l8 50H64z" fill="#c7c6ae"/>
+      <path d="M37 26h54l-8 26H45z" fill="#245861"/>
+      <path d="M42 30h44l-5 15H47z" fill="#9ad3cc"/>
+      <path d="M57 30v15m14-15v15" stroke="#416f70" stroke-width="3"/>
+      <path d="m32 26 8-8h48l8 8z" fill="#78a69b"/>
+      <path d="M64 3v15m0-8h17" stroke="#42666a" stroke-width="3"/>
+      <circle cx="64" cy="4" r="3" fill="#e9955c"/>
+      <path d="M57 62h14v6H57zm0 14h14v6H57z" fill="#5c8180"/>
+      <path d="M36 94h56v6H36z" fill="#b9bca7"/>
+    </symbol>
+    <symbol id="parking-garage" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M15 30h98v63H15z" fill="#c8c9b6"/>
+      <path d="M15 30h98v9H15zm0 26h98v8H15zm0 27h98v10H15z" fill="#ede4cd"/>
+      <path d="M23 40h82v15H23zm0 25h82v17H23z" fill="#3c5d5e"/>
+      <path d="M40 39v44m24-44v44m24-44v44" stroke="#c8c9b6" stroke-width="5"/>
+      <path d="M28 48h9v5h-9zm41 0h13v5H69zM47 75h11v5H47zm45 0h10v5H92z" fill="#e8a363"/>
+      <path d="M22 22h84v8H22z" fill="#759b8a"/>
+      <rect x="52" y="10" width="24" height="24" rx="4" fill="#3f7b7b"/>
+      <path d="M61 29V15h6a4 4 0 0 1 0 8h-6" fill="none" stroke="#f9f2da" stroke-width="3"/>
+    </symbol>
+    <symbol id="cargo-terminal" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M15 44h98v44H15z" fill="#e4d7b8"/>
+      <path d="m10 44 18-22h72l18 22z" fill="#c77d53"/>
+      <path d="m28 22-11 15h94l-11-15z" fill="#e6a272"/>
+      <path d="M27 51h27v37H27zm43 0h27v37H70z" fill="#426b6b"/>
+      <path d="M30 57h21m-21 7h21m22-7h21m-21 7h21" stroke="#7ca59a" stroke-width="2"/>
+      <path d="M9 82h25v17H9z" fill="#d59e61"/>
+      <path d="M12 85h19v11H12zM95 77h24v20H95z" fill="#edc28b"/>
+      <path d="M20 83v15m85-20v19" stroke="#a97c51" stroke-width="3"/>
+      <path d="M57 51h10v9H57z" fill="#9ac5b4"/>
+    </symbol>
+    <symbol id="hotel" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M28 20h72v75H28z" fill="#eee1c4"/>
+      <path d="M88 20h12v75H88z" fill="#d6c6a8"/>
+      <path d="M23 18h82v9H23z" fill="#ce8258"/>
+      <path d="M37 35h12v12H37zm21 0h12v12H58zm21 0h12v12H79zM37 56h12v12H37zm21 0h12v12H58zm21 0h12v12H79z" fill="#4d7875"/>
+      <path d="M40 37h6v4h-6zm21 0h6v4h-6zm21 0h6v4h-6zM40 58h6v4h-6zm21 0h6v4h-6zm21 0h6v4h-6z" fill="#aed7c2"/>
+      <path d="M52 78h24v17H52z" fill="#2e5b60"/>
+      <path d="m46 78 6-8h24l6 8z" fill="#e09a68"/>
+      <path d="M21 95h86v5H21z" fill="#babaa2"/>
+      <path d="M51 7h26v13H51z" fill="#3e7372"/>
+      <path d="M59 10v8m10-8v8m-10-4h10" stroke="#faf0d2" stroke-width="3"/>
+    </symbol>
+    <symbol id="fuel-depot" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M17 48h43v39H17z" fill="#c3d0bb"/>
+      <ellipse cx="38.5" cy="48" rx="21.5" ry="11" fill="#f0e6cc"/>
+      <path d="M17 67h43v9H17z" fill="#d68a56"/>
+      <ellipse cx="38.5" cy="87" rx="21.5" ry="8" fill="#a0b3a1"/>
+      <path d="M66 33h43v52H66z" fill="#d7dfc9"/>
+      <ellipse cx="87.5" cy="33" rx="21.5" ry="11" fill="#f5eed7"/>
+      <path d="M66 58h43v9H66z" fill="#d68a56"/>
+      <ellipse cx="87.5" cy="85" rx="21.5" ry="8" fill="#afbfaa"/>
+      <path d="M88 16v11M60 83h13v14h28" fill="none" stroke="#42696b" stroke-width="5"/>
+      <path d="M38 51c-10 13-10 18 0 18s10-5 0-18" fill="#416d6e"/>
+    </symbol>
+    <symbol id="duty-free-mall" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M14 43h100v49H14z" fill="#f0dfbf"/>
+      <path d="M20 23h88v23H20z" fill="#d68b66"/>
+      <path d="M16 19h96v8H16z" fill="#f1bd8e"/>
+      <path d="M23 57h21v29H23zm30 0h22v35H53zm31 0h21v29H84z" fill="#35656a"/>
+      <path d="m17 45-7 13h108l-7-13z" fill="#89b59d"/>
+      <path d="m28 45-4 13h12l2-13zm25 0-1 13h12V45zm25 0 2 13h12l-4-13z" fill="#faf0d4"/>
+      <path d="M33 31h62v7H33z" fill="#f9e5ba"/>
+      <path d="M27 63h13v3H27zm61 0h13v3H88z" fill="#8fc6b8"/>
+      <path d="M9 92h110v6H9z" fill="#b7b9a1"/>
+    </symbol>
+    <symbol id="spaceport" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M13 82h102v15H13z" fill="#b4b9ac"/>
+      <ellipse cx="64" cy="82" rx="51" ry="12" fill="#d6dac7"/>
+      <path d="M23 81V25h10v56m0-43h24m-24 20h18" fill="none" stroke="#4d7778" stroke-width="6"/>
+      <path d="M58 37Q72 3 86 37v40H58z" fill="#f9f1d8"/>
+      <path d="M72 12q10 8 14 25H58q4-17 14-25" fill="#df9160"/>
+      <path d="m58 61-12 23h12zm28 0 12 23H86z" fill="#5c9390"/>
+      <circle cx="72" cy="46" r="8" fill="#3a656c"/>
+      <circle cx="70" cy="44" r="3" fill="#a8dbcc"/>
+      <path d="M65 77h14l-3 11h-8z" fill="#3d5d61"/>
+      <path d="m72 80 5 12-5 11-5-11z" fill="#efb761"/>
+      <path d="M23 24h10v8H23z" fill="#e99c68"/>
+    </symbol>
+    <symbol id="annex" viewBox="0 0 128 112">
+      <path d="M15 46h95v45H15z" fill="#d6d3b7"/>
+      <path d="m10 46 12-18h83l10 18z" fill="#8eb9a5"/>
+      <use href="#windows" width="128" height="112"/>
+    </symbol>
+    <symbol id="van" viewBox="0 0 128 112">
+      <ellipse cx="66" cy="81" rx="48" ry="8" fill="#173d3d" opacity=".13"/>
+      <rect x="15" y="40" width="72" height="33" rx="5" fill="#f1d391"/>
+      <path d="M87 48h16l13 15v10H87z" fill="#e49a5f"/>
+      <path d="M92 52h9l8 10H92z" fill="#37666b"/>
+      <path d="M19 63h63v10H19z" fill="#d6b573"/>
+      <circle cx="35" cy="74" r="9" fill="#315456"/><circle cx="100" cy="74" r="9" fill="#315456"/>
+      <circle cx="35" cy="74" r="4" fill="#b3c5b7"/><circle cx="100" cy="74" r="4" fill="#b3c5b7"/>
+      <path d="M47 47h26v10H47z" fill="#faf0d4"/>
+    </symbol>
+    <symbol id="cloud" viewBox="0 0 128 112">
+      <path d="M23 76a18 18 0 0 1-1-36 27 27 0 0 1 50-9 22 22 0 0 1 34 14 16 16 0 0 1-1 31z" fill="#fffbed" opacity=".77"/>
+    </symbol>
+    <symbol id="portrait" viewBox="0 0 128 112">
+      <circle cx="64" cy="55" r="46" fill="#e2e8cf"/>
+      <path d="M26 100q1-34 38-34t38 34" fill="#38676e"/>
+      <path d="m48 71 16 11 16-11-8 29H56z" fill="#f7efda"/>
+      <path d="M56 59h16v17q-8 9-16 0" fill="#c78c66"/>
+      <rect x="43" y="21" width="42" height="48" rx="20" fill="#e6b38b"/>
+      <path d="M44 41q-6-26 18-27 28-2 23 30l-8-14q-16 11-33 3z" fill="#4c5147"/>
+      <path d="M53 48h3m17 0h3" stroke="#3b504c" stroke-width="3" stroke-linecap="round"/>
+      <path d="M60 59q5 4 10-1" fill="none" stroke="#ae7359" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="pilot" viewBox="0 0 128 112">
+      <use href="#portrait" width="128" height="112"/>
+      <path d="m39 25 4-13h42l5 13z" fill="#31525c"/>
+      <path d="M39 25h51l-9 8H47z" fill="#243f4b"/>
+      <path d="M48 21h33v5H48z" fill="#e7bc6f"/>
+      <path d="m64 82 4 6-4 14-4-14z" fill="#cc8d51"/>
+      <path d="M35 80h13m32 0h13" stroke="#e4bd75" stroke-width="4"/>
+    </symbol>
+    <symbol id="flight-attendant" viewBox="0 0 128 112">
+      <use href="#portrait" width="128" height="112"/>
+      <path d="M79 25q17 0 12 30l-9 16-4-9z" fill="#4c5147"/>
+      <path d="m43 24 9-15 30 10-3 10z" fill="#66988b"/>
+      <path d="m51 73 13 8 13-8-5 16-8-8-9 14z" fill="#e8a06d"/>
+      <path d="M34 85h9v5h-9z" fill="#edcb85"/>
+    </symbol>
+    <symbol id="ground-crew" viewBox="0 0 128 112">
+      <use href="#portrait" width="128" height="112"/>
+      <path d="M39 28q0-24 25-24t25 24z" fill="#e4b65e"/>
+      <path d="M36 26h56v8H36zM60 7h8v20h-8z" fill="#f3ce7a"/>
+      <path d="m44 72 12 6-5 22H32zm40 0-12 6 5 22h19z" fill="#e7a063"/>
+      <path d="m40 81 12 4m25 0 12-4" stroke="#f7e7b1" stroke-width="5"/>
+    </symbol>
+    <symbol id="mechanic" viewBox="0 0 128 112">
+      <use href="#portrait" width="128" height="112"/>
+      <path d="M41 26q0-17 25-17 21 1 21 18H41z" fill="#76a295"/>
+      <path d="M40 26h54v6H40z" fill="#437a75"/>
+      <path d="M45 74v26m38-26v26" stroke="#aac4b0" stroke-width="7"/>
+      <path d="m88 88 10-15m-4-7a7 7 0 0 0 10 9l-4-4 3-5" fill="none" stroke="#e2e1cc" stroke-width="4"/>
+    </symbol>
+    <symbol id="security-officer" viewBox="0 0 128 112">
+      <use href="#portrait" width="128" height="112"/>
+      <path d="m39 25 5-15h40l6 15z" fill="#355c65"/>
+      <path d="M39 25h51l-9 7H47z" fill="#24434e"/>
+      <path d="m64 13 6 3-1 7-5 4-5-4-1-7zM85 80l7 3-1 8-6 4-6-4-1-8z" fill="#e8c278"/>
+      <path d="M35 94h56" stroke="#2a4d57" stroke-width="7"/>
+    </symbol>
+    <symbol id="air-traffic-controller" viewBox="0 0 128 112">
+      <use href="#portrait" width="128" height="112"/>
+      <path d="M40 49V36a24 24 0 0 1 48 0v13" fill="none" stroke="#2d515b" stroke-width="5"/>
+      <rect x="36" y="39" width="9" height="19" rx="4" fill="#427675"/>
+      <rect x="83" y="39" width="9" height="19" rx="4" fill="#427675"/>
+      <path d="M88 55v7H74" fill="none" stroke="#31515a" stroke-width="3"/>
+      <path d="M44 89h40v18H44z" fill="#98b6a6"/>
+      <circle cx="64" cy="97" r="3" fill="#3b6b69"/>
+    </symbol>
+    <symbol id="better-seats" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <rect x="35" y="11" width="46" height="56" rx="12" fill="#82b3a3"/>
+      <rect x="41" y="17" width="34" height="39" rx="8" fill="#b1d2b7"/>
+      <path d="M35 62h58v21H35z" fill="#62928b"/>
+      <path d="M30 58h9v21h-9zm54 0h9v21h-9z" fill="#d6b17c"/>
+      <path d="M43 83v17m42-17v17" stroke="#3e6668" stroke-width="6"/>
+      <path d="M49 29h17" stroke="#e4e9cb" stroke-width="4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="faster-check-in" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M40 53h48l8 45H32z" fill="#9eb9a7"/>
+      <path d="M36 17h56v43H36z" fill="#3d676c"/>
+      <path d="M42 23h44v29H42z" fill="#acd5bf"/>
+      <path d="m52 37 8 8 15-15" fill="none" stroke="#4f8274" stroke-width="5"/>
+      <path d="M51 72h26v6H51z" fill="#3c6567"/>
+      <path d="M55 76h18v13H55z" fill="#fff2d0"/>
+    </symbol>
+    <symbol id="moving-walkways" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="m15 62 70-34 28 18-70 37z" fill="#a6bb9f"/>
+      <path d="m20 66 66-32 21 12-65 34z" fill="#4c7371"/>
+      <path d="m31 61 21 13m-9-19 21 13m-9-19 21 13m-8-19 21 13m-9-19 21 13" stroke="#aac5b0" stroke-width="2"/>
+      <path d="M15 62V45l70-34v17M43 83V66l70-37v17" fill="none" stroke="#77a89c" stroke-width="5"/>
+      <path d="m63 54 9 1-5 7" fill="none" stroke="#efcc80" stroke-width="3"/>
+    </symbol>
+    <symbol id="radar-system" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="m59 67-9 28h28l-9-28" fill="#b7bca3"/>
+      <circle cx="64" cy="43" r="35" fill="#3e6e70"/>
+      <circle cx="64" cy="43" r="27" fill="#90bda2"/>
+      <path d="M64 16v54M37 43h54" stroke="#659b85" stroke-width="2"/>
+      <circle cx="64" cy="43" r="17" fill="none" stroke="#659b85" stroke-width="2"/>
+      <path d="m64 43 20-19" stroke="#f5e6b3" stroke-width="3"/>
+      <circle cx="51" cy="54" r="4" fill="#f6dfa0"/><circle cx="76" cy="34" r="3" fill="#fff1c6"/>
+      <path d="M40 95h48v5H40z" fill="#547f79"/>
+    </symbol>
+    <symbol id="premium-lounges" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M29 14h27v23q0 16-13 16T29 37zm43 0h27v23q0 16-13 16T72 37z" fill="#cbe0bd" stroke="#6e9b8b" stroke-width="2"/>
+      <path d="M30 33h25v6q0 12-12 12T30 39zm43 0h25v6q0 12-12 12T73 39z" fill="#e9c877"/>
+      <path d="M43 53v34m43-34v34M30 88h26m17 0h26" stroke="#537e79" stroke-width="4" stroke-linecap="round"/>
+      <path d="m63 12 2 7 7 2-7 2-2 7-2-7-7-2 7-2z" fill="#e5af5b"/>
+    </symbol>
+    <symbol id="automated-baggage" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <rect x="13" y="66" width="102" height="26" rx="13" fill="#486d6d"/>
+      <path d="M27 79h74" stroke="#9cb89f" stroke-width="13" stroke-linecap="round"/>
+      <path d="M27 73v12m15-12v12m15-12v12m15-12v12m15-12v12m14-12v12" stroke="#537c74" stroke-width="2"/>
+      <rect x="41" y="29" width="46" height="43" rx="7" fill="#e3aa6e"/>
+      <path d="M56 29v-8h16v8m-20 7v29m24-29v29" fill="none" stroke="#a87350" stroke-width="4"/>
+      <path d="M24 92v9m80-9v9" stroke="#6f8f7d" stroke-width="4"/>
+    </symbol>
+    <symbol id="international-gates" viewBox="0 0 128 112">
+      <circle cx="64" cy="52" r="40" fill="#8ec2bc"/>
+      <path d="m31 28 18-10 6 12-8 12 11 8-4 19-12-5-3-16-11-4zm44-13 19 10-2 13-13 3-7-10zM76 51l19-5 9 11-7 17-13 7-9-15z" fill="#d2dfad"/>
+      <ellipse cx="64" cy="52" rx="21" ry="40" fill="none" stroke="#5a9c97" stroke-width="2"/>
+      <path d="M25 52h78M32 30h64M32 74h64" stroke="#5a9c97" stroke-width="2" fill="none"/>
+      <path d="m19 85 11-5 68-50 8 2-7 9-63 47-8 11-6-9-12-2z" fill="#fff0ca" stroke="#588580" stroke-width="2"/>
+    </symbol>
+    <symbol id="duty-free-contracts" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <path d="M33 10h49l17 17v71H33z" fill="#f3e6bf"/>
+      <path d="M82 10v19h17" fill="#d9bb82"/>
+      <path d="M45 41h40M45 51h31M45 61h40M45 71h23" stroke="#87a88c" stroke-width="4"/>
+      <circle cx="86" cy="81" r="17" fill="#e5aa5e"/>
+      <path d="m86 70 3 7 7 1-5 5 1 8-6-4-7 4 1-8-5-5 8-1z" fill="#fae8b2"/>
+    </symbol>
+    <symbol id="boarding-pass-app" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <rect x="38" y="6" width="53" height="94" rx="10" fill="#345e65"/>
+      <rect x="43" y="13" width="43" height="75" rx="5" fill="#b6d6ba"/>
+      <path d="M55 12h20v5H55z" fill="#345e65"/>
+      <path d="m52 40 11 2 12-13 5 2-9 15 7 7-2 3-13-9-11-2z" fill="#3b7772"/>
+      <path d="M51 65h27v14H51z" fill="#f5e6be"/>
+      <path d="M55 68v8m5-8v8m4-8v8m6-8v8m4-8v8" stroke="#4c7471" stroke-width="2"/>
+      <circle cx="64" cy="94" r="3" fill="#9fbdab"/>
+    </symbol>
+    <symbol id="galactic-scheduling" viewBox="0 0 128 112">
+      <circle cx="64" cy="55" r="43" fill="#355e69"/>
+      <circle cx="64" cy="55" r="25" fill="#90b9a7"/>
+      <path d="M26 77q-16 1 2-21m72-21q28-9 11 9c-15 16-65 42-85 33" fill="none" stroke="#e9bd77" stroke-width="7"/>
+      <path d="M64 38v18l12 7" fill="none" stroke="#f6edce" stroke-width="4" stroke-linecap="round"/>
+      <path d="m95 8 2 7 8 2-8 2-2 8-2-8-8-2 8-2zM26 25l2 5 5 1-5 2-2 5-1-5-6-2 6-1z" fill="#f2d28d"/>
+    </symbol>
+    <symbol id="vip-charter" viewBox="0 0 128 112">
+      <use href="#plane" width="128" height="112"/>
+      <path d="m97 8 4 10 11 1-8 7 2 11-9-6-9 6 2-11-8-7 11-1z" fill="#dba657"/>
+    </symbol>
+    <symbol id="clear-skies" viewBox="0 0 128 112">
+      <circle cx="76" cy="40" r="24" fill="#e9bb64"/>
+      <path d="M76 4v7m0 58v7m36-36h-7m-58 0h-7m10-26 6 6m46 46-6-6m6-46-6 6m-46 46 6-6" stroke="#dba657" stroke-width="4" stroke-linecap="round"/>
+      <path d="M25 90a16 16 0 0 1-1-32 23 23 0 0 1 43-7 18 18 0 0 1 29 12 14 14 0 0 1 0 27z" fill="#e1ead0" stroke="#8fac91" stroke-width="2"/>
+    </symbol>
+    <symbol id="celebrity-visit" viewBox="0 0 128 112">
+      <path d="m64 9 14 27 30 5-22 22 5 31-27-14-27 14 5-31-22-22 30-5z" fill="#ecc77f" stroke="#c79555" stroke-width="2"/>
+      <path d="M39 47h20v13H43zm30 0h20l-4 13H69z" fill="#345a60"/>
+      <path d="M59 50h10m-15 20q10 8 20 0" fill="none" stroke="#345a60" stroke-width="3"/>
+    </symbol>
+    <symbol id="school-tour" viewBox="0 0 128 112">
+      <use href="#shadow" width="128" height="112"/>
+      <rect x="14" y="28" width="97" height="55" rx="9" fill="#e8b765"/>
+      <path d="M21 35h20v23H21zm27 0h20v23H48zm27 0h25v23H75z" fill="#497372"/>
+      <path d="M24 38h14v6H24zm27 0h14v6H51zm27 0h19v6H78z" fill="#a3c3af"/>
+      <path d="M15 65h96" stroke="#ad7f4b" stroke-width="4"/>
+      <circle cx="35" cy="84" r="10" fill="#345557"/><circle cx="93" cy="84" r="10" fill="#345557"/>
+      <circle cx="35" cy="84" r="4" fill="#b5c3a9"/><circle cx="93" cy="84" r="4" fill="#b5c3a9"/>
+      <path d="M47 19h30v9H47z" fill="#d29b52"/>
+    </symbol>
+    <symbol id="weather-delay" viewBox="0 0 128 112">
+      <path d="M24 66a18 18 0 0 1 0-36 26 26 0 0 1 48-7 22 22 0 0 1 34 14 15 15 0 0 1-1 29z" fill="#77968f"/>
+      <path d="M34 78 25 94m40-16-9 16m40-16-9 16" stroke="#78a7a3" stroke-width="5" stroke-linecap="round"/>
+      <path d="m69 47-17 30h15l-7 20 26-32H71l11-18z" fill="#ecc77f"/>
+    </symbol>
+    <symbol id="security-incident" viewBox="0 0 128 112">
+      <path d="m64 9 40 16v31q-1 25-40 45Q25 81 24 56V25z" fill="#69998b"/>
+      <path d="m64 18 31 13v25q-1 20-31 35Q34 76 33 56V31z" fill="#dce3bd"/>
+      <path d="M47 48h34v29H47z" fill="#537b72"/>
+      <path d="M53 48V37a11 11 0 0 1 22 0v11" fill="none" stroke="#537b72" stroke-width="5"/>
+      <circle cx="64" cy="60" r="4" fill="#e5bc77"/><path d="M64 61v7" stroke="#e5bc77" stroke-width="3"/>
+    </symbol>
+    <symbol id="medal" viewBox="0 0 128 112">
+      <path d="m38 63-8 40 22-8 12 12 10-43zm27 0 9 44 13-12 18 8-12-40z" fill="#739e8b"/>
+      <circle cx="65" cy="46" r="36" fill="#d79f5e"/>
+      <circle cx="65" cy="44" r="30" fill="#efcd86"/>
+      <circle cx="65" cy="44" r="24" fill="none" stroke="#d2a45e" stroke-width="2" stroke-dasharray="3 3"/>
+    </symbol>
+    <symbol id="wings" viewBox="0 0 128 112">
+      <path d="m64 29 6 10h22l-6 8H73l-3 6h11l-5 6H52l-5-6h11l-3-6H42l-6-8h22z" fill="#497a72"/>
+    </symbol>
+    <symbol id="star" viewBox="0 0 128 112">
+      <path d="m65 25 6 12 14 2-10 10 2 14-12-6-13 6 3-14-11-10 14-2z" fill="#497a72"/>
+    </symbol>
+    <symbol id="first-flight" viewBox="0 0 128 112"><use href="#medal" width="128" height="112"/><use href="#wings" width="128" height="112"/></symbol>
+    <symbol id="ten-flights" viewBox="0 0 128 112"><use href="#first-flight" width="128" height="112"/><path d="M55 67h20" stroke="#fff2ca" stroke-width="3"/></symbol>
+    <symbol id="thousand-flights" viewBox="0 0 128 112"><use href="#first-flight" width="128" height="112"/><path d="M55 67h20m-20 5h20" stroke="#fff2ca" stroke-width="3"/></symbol>
+    <symbol id="first-grand" viewBox="0 0 128 112"><use href="#medal" width="128" height="112"/><path d="M75 32H60a7 7 0 0 0 0 14h9a7 7 0 0 1 0 14H53m12-34v40" fill="none" stroke="#497a72" stroke-width="4"/></symbol>
+    <symbol id="hundred-k" viewBox="0 0 128 112"><use href="#first-grand" width="128" height="112"/><path d="M44 23h42" stroke="#fff2ca" stroke-width="3"/></symbol>
+    <symbol id="ten-million" viewBox="0 0 128 112"><use href="#first-grand" width="128" height="112"/><path d="m41 27 7-10 6 8 11-12 11 12 6-8 7 10z" fill="#fff2ca"/></symbol>
+    <symbol id="first-building" viewBox="0 0 128 112"><use href="#medal" width="128" height="112"/><path d="M47 35h36v26H47zM43 35l9-11h26l9 11z" fill="#497a72"/><path d="M61 46h8v15h-8z" fill="#efcd86"/></symbol>
+    <symbol id="fifty-buildings" viewBox="0 0 128 112"><use href="#first-building" width="128" height="112"/><path d="M39 45h7v17h-7zm45 0h7v17h-7z" fill="#497a72"/></symbol>
+    <symbol id="full-runways" viewBox="0 0 128 112"><use href="#medal" width="128" height="112"/><path d="M43 30h44v30H43z" fill="#497a72"/><path d="M47 45h8m6 0h8m6 0h8" stroke="#efcd86" stroke-width="3"/></symbol>
+    <symbol id="big-staff" viewBox="0 0 128 112"><use href="#medal" width="128" height="112"/><path d="M49 63V50q16-12 32 0v13" fill="#497a72"/><circle cx="65" cy="34" r="10" fill="#497a72"/><circle cx="44" cy="41" r="6" fill="#739e8b"/><circle cx="86" cy="41" r="6" fill="#739e8b"/></symbol>
+    <symbol id="first-upgrade" viewBox="0 0 128 112"><use href="#medal" width="128" height="112"/><path d="M58 63V46H47l18-20 18 20H72v17z" fill="#497a72"/></symbol>
+    <symbol id="five-upgrades" viewBox="0 0 128 112"><use href="#first-upgrade" width="128" height="112"/><path d="M47 67h36" stroke="#fff2ca" stroke-width="3"/></symbol>
+    <symbol id="ten-k-pax" viewBox="0 0 128 112"><use href="#medal" width="128" height="112"/><use href="#international-gates" x="32" y="16" width="66" height="59"/></symbol>
+    <symbol id="level-five" viewBox="0 0 128 112"><use href="#medal" width="128" height="112"/><use href="#star" width="128" height="112"/></symbol>
+    <symbol id="level-ten" viewBox="0 0 128 112"><use href="#level-five" width="128" height="112"/><path d="m40 23 5-8 5 8m30 0 5-8 5 8" fill="none" stroke="#fff2ca" stroke-width="3"/></symbol>
+  </defs>
+</svg>

@@ -1,9 +1,11 @@
-// ui.js — all DOM access lives here. Handlers for shop actions are
+// ui.js — interface rendering (the airport scene has its own renderer). Handlers for shop actions are
 // injected via initUI() so this module never imports gameLogic.js
 // (acyclic module graph). Click handlers use event delegation, so
 // re-rendering lists never orphans listeners.
 
 import { gameState } from './state.js';
+import { artIcon } from './art.js';
+import { initAirportScene, renderAirportScene, launchFlight } from './airportScene.js';
 import {
     formatNumber,
     getBulkCost,
@@ -29,6 +31,7 @@ import {
 
 // handlers: { onBuyBuilding, onHireStaff, onPurchaseUpgrade, onSetQuantity, onReset }
 export function initUI(handlers) {
+    initAirportScene();
     const clicker = document.getElementById('main-clicker');
     if (clicker && handlers.onMainClick) {
         clicker.addEventListener('click', handlers.onMainClick);
@@ -69,6 +72,7 @@ export function initUI(handlers) {
 // ---------- Resource header ----------
 
 export function updateResourceDisplay() {
+    renderAirportScene(gameState);
     setText('money', formatNumber(gameState.money));
     setText('passengers', formatNumber(gameState.passengers));
     setText('reputation', formatNumber(gameState.reputation));
@@ -131,6 +135,7 @@ export function updateQuantitySelector() {
     document.querySelectorAll('.qty-button').forEach(button => {
         const qty = button.dataset.qty === 'max' ? 'max' : parseInt(button.dataset.qty, 10);
         button.classList.toggle('active', qty === gameState.buyQuantity);
+        button.setAttribute('aria-pressed', String(qty === gameState.buyQuantity));
     });
 }
 
@@ -183,6 +188,8 @@ export function renderBuildings() {
         const el = document.createElement('div');
         el.className = `shop-item ${isLocked ? 'locked' : ''}`;
         el.innerHTML = `
+            <div class="item-art">${artIcon(building.id)}</div>
+            <div class="item-kicker">Infrastructure · Level ${building.unlockLevel}</div>
             <div class="item-name">${building.name} <span class="owned-count">(${building.owned}${building.id === 'runway' ? '/' + MAX_RUNWAYS : ''})</span></div>
             <div class="item-description">${building.description}</div>
             <div class="item-production">${productionText}</div>
@@ -212,6 +219,8 @@ export function renderStaff() {
         const el = document.createElement('div');
         el.className = `shop-item ${isLocked ? 'locked' : ''}`;
         el.innerHTML = `
+            <div class="item-art portrait-art">${artIcon(staff.id)}</div>
+            <div class="item-kicker">Your people · Level ${staff.unlockLevel}</div>
             <div class="item-name">${staff.name} <span class="owned-count">(${staff.owned})</span></div>
             <div class="item-description">${staff.description}</div>
             <div class="item-production">${bonusText}</div>
@@ -240,6 +249,8 @@ export function renderUpgrades() {
         const el = document.createElement('div');
         el.className = `shop-item upgrade-item ${isPurchased ? 'purchased' : ''} ${isLocked ? 'locked' : ''}`;
         el.innerHTML = `
+            <div class="item-art upgrade-art">${artIcon(upgrade.id)}</div>
+            <div class="item-kicker">Airport improvement · Level ${upgrade.unlockLevel}</div>
             <div class="item-name">${upgrade.name}</div>
             <div class="item-description">${upgrade.description}</div>
             <div class="item-production">${upgrade.effectText}</div>
@@ -259,6 +270,7 @@ export function renderAchievements() {
         const el = document.createElement('div');
         el.className = `shop-item achievement-item ${earned ? 'earned' : 'unearned'}`;
         el.innerHTML = `
+            <div class="item-art medal-art">${artIcon(achievement.id)}</div>
             <div class="item-name">${achievement.name}${earned ? ' <span class="earned-tag">Earned</span>' : ''}</div>
             <div class="item-description">${achievement.description}</div>
         `;
@@ -292,7 +304,7 @@ export function renderEventBanner() {
     banner.innerHTML = active.map(active => {
         const def = eventDefinitions.find(d => d.id === active.id);
         const secs = Math.max(0, Math.ceil((active.endsAt - now) / 1000));
-        return `<span class="event-chip ${def && def.polarity === 'bad' ? 'bad' : 'good'}">${def ? def.name : active.id} · ${secs}s</span>`;
+        return `<span class="event-chip ${def && def.polarity === 'bad' ? 'bad' : 'good'}">${def ? artIcon(def.id, 'event-art') : ''}${def ? def.name : active.id} · ${secs}s</span>`;
     }).join('');
 }
 
@@ -398,7 +410,10 @@ function setBadge(tabId, visible) {
 
 export function switchTab(tabId) {
     document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-    document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+        button.setAttribute('aria-pressed', String(button.dataset.tab === tabId));
+    });
 
     const pane = document.getElementById(tabId);
     if (pane) pane.classList.add('active');
@@ -412,12 +427,22 @@ export function switchTab(tabId) {
 
 // ---------- Notifications & feedback ----------
 
-export function addNotification(message, type = 'info') {
+export function addNotification(message, type = 'info', artId = null) {
     const list = document.getElementById('notification-list');
     if (!list) return;
     const el = document.createElement('div');
     el.className = `notification ${type}`;
-    el.textContent = message;
+    if (artId) {
+        const icon = document.createElement('span');
+        icon.innerHTML = artIcon(artId, 'notification-art');
+        const text = document.createElement('span');
+        text.textContent = message;
+        el.appendChild(icon);
+        el.appendChild(text);
+        el.classList.add('illustrated-notification');
+    } else {
+        el.textContent = message;
+    }
     list.prepend(el);
     while (list.children.length > 12) {
         list.lastElementChild.remove();
@@ -425,6 +450,7 @@ export function addNotification(message, type = 'info') {
 }
 
 export function showClickFeedback(money, passengers) {
+    launchFlight();
     const container = document.getElementById('click-feedback');
     if (!container) return;
     const el = document.createElement('div');

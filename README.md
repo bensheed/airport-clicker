@@ -53,6 +53,24 @@ Random events fire every ~45–100 seconds: VIP charters, clear skies, celebrity
 - Offline earnings at 50% rate, capped at 4 hours
 - Autosave every 15s and on exit; v1 saves migrate automatically
 
+## The Living Airport
+
+Little River is an illustrated airport that grows with your saved purchases:
+
+- Your first runway paves the grass strip; eight runway lights track the runway cap.
+- Each of the other nine building types has a reserved plot. Buying the first one adds it to the map; owning 10 and 25 adds extensions instead of overcrowding the scene.
+- Operating a flight launches an aircraft. A developed airport also has ambient departures, cargo aircraft, staff vehicles, and passengers.
+- Weather delays add storm shading and rain; clear skies brighten the scene. Selected upgrades add walkways, international gates, radar, and an orbital route.
+- Every building, staff role, upgrade, achievement, and event has matching original SVG art.
+
+The map scrolls horizontally on small screens without shrinking the controls. A motion toggle persists separately from the save, and system reduced-motion preferences are always respected. The map has a text equivalent for screen readers. Animations are decorative: they do not change income or flight counts, and existing saves need no migration.
+
+### Working with the artwork
+
+`assets/airport.svg` contains the reusable, hand-authored sprite symbols, and `assets/airfield.svg` is the landscape. All illustrations are original to this project; no third-party art, external fonts, or build tooling is required. Use `artIcon(id)` from `js/modules/art.js` for a shop thumbnail. Definition IDs match sprite IDs, and regression tests check that all content has artwork.
+
+`js/modules/airportScene.js` derives a visual model from game state and updates only changed building lots. Keep long-running animated elements outside the shop renderer so purchases do not restart flights. Add new building coordinates to `SCENE_LOTS`; do not save DOM nodes or animation state in the game save.
+
 ## Running the Game
 
 ```bash
