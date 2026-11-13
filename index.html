@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#edf0e5">
+    <meta name="description" content="Grow a little riverside airfield into a spaceport empire. An illustrated, free airport incremental game.">
     <title>Airport Clicker</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -10,8 +12,11 @@
     <div class="game-container">
         <header>
             <div class="header-top">
-                <h1>Airport Clicker</h1>
-                <div class="level-badge">Level <span id="header-level">1</span></div>
+                <div class="brand">
+                    <svg class="brand-mark" viewBox="0 0 128 112" aria-hidden="true"><use href="assets/airport.svg#plane" width="128" height="112"></use></svg>
+                    <div><p class="eyebrow">A little runway. A world of possibility.</p><h1>Airport <span>Clicker</span></h1></div>
+                </div>
+                <div class="level-badge">Airport level <span id="header-level">1</span></div>
             </div>
             <div class="resources">
                 <div class="resource">
@@ -37,15 +42,66 @@
             </div>
         </header>
 
+        <section id="airport-panel" class="airport-panel" aria-labelledby="airport-title" data-weather="fair">
+            <div class="scene-heading">
+                <div><p class="eyebrow"><span class="live-dot"></span> Live from Little River</p><h2 id="airport-title">Small airport. <span>Big plans.</span></h2></div>
+                <div class="scene-tools"><span class="weather-indicator" id="scene-weather">Fair weather</span><button id="motion-toggle" class="quiet-button" type="button" aria-pressed="true">Motion on</button></div>
+            </div>
+            <div class="map-viewport" tabindex="0" role="region" aria-label="Illustrated airport map. Scroll horizontally to explore on small screens." aria-describedby="scene-summary">
+                <svg class="airport-map" viewBox="0 0 1200 500" aria-hidden="true" focusable="false">
+                    <defs>
+                        <pattern id="rain" width="25" height="30" patternUnits="userSpaceOnUse"><path d="m12 2-5 12" stroke="#e5ede3" stroke-width="2" opacity=".5"></path></pattern>
+                    </defs>
+                    <image href="assets/airfield.svg" width="1200" height="500"></image>
+                    <g class="grass-runway">
+                        <rect x="77" y="68" width="790" height="101" rx="11" fill="#99ad83"></rect>
+                        <rect x="86" y="78" width="772" height="80" rx="5" fill="#b6ba8f"></rect>
+                        <path d="M159 118h628" stroke="#d9d4a6" stroke-width="3" stroke-dasharray="18 19"></path>
+                        <text class="grass-strip-label" x="472" y="147" text-anchor="middle">HUMBLE BEGINNINGS / GRASS STRIP</text>
+                    </g>
+                    <g class="paved-runway">
+                        <rect x="77" y="68" width="790" height="101" rx="6" fill="#57716b"></rect>
+                        <rect x="84" y="74" width="776" height="89" rx="3" fill="#3b5555"></rect>
+                        <path d="M90 79h764M90 158h764" stroke="#d5d7bc" stroke-width="2"></path>
+                        <path d="M102 88v20m7-20v20m7-20v20m-14 20v20m7-20v20m7-20v20m712-60v20m7-20v20m7-20v20m-14 20v20m7-20v20m7-20v20" stroke="#f2e9ce" stroke-width="4"></path>
+                        <path d="M194 118h562" stroke="#f2e9ce" stroke-width="3" stroke-dasharray="29 23"></path>
+                        <text x="141" y="126" class="runway-number">09</text><text x="780" y="126" class="runway-number">27</text>
+                        <path d="M96 68h4m101 0h4m101 0h4m101 0h4m101 0h4m101 0h4m101 0h4m101 0h4M96 169h4m101 0h4m101 0h4m101 0h4m101 0h4m101 0h4m101 0h4m101 0h4" stroke="#f3ca7b" stroke-width="4"></path>
+                    </g>
+                    <text id="runway-count" class="map-small-label" x="81" y="57">RUNWAYS 0 / 8</text>
+                    <g fill="#8aa17d">
+                        <rect class="runway-count-light" x="731" y="48" width="10" height="6" rx="2"></rect><rect class="runway-count-light" x="748" y="48" width="10" height="6" rx="2"></rect>
+                        <rect class="runway-count-light" x="765" y="48" width="10" height="6" rx="2"></rect><rect class="runway-count-light" x="782" y="48" width="10" height="6" rx="2"></rect>
+                        <rect class="runway-count-light" x="799" y="48" width="10" height="6" rx="2"></rect><rect class="runway-count-light" x="816" y="48" width="10" height="6" rx="2"></rect>
+                        <rect class="runway-count-light" x="833" y="48" width="10" height="6" rx="2"></rect><rect class="runway-count-light" x="850" y="48" width="10" height="6" rx="2"></rect>
+                    </g>
+                    <g class="walkway-detail"><path d="M403 291h256" stroke="#789a87" stroke-width="9"></path><path d="M403 291h256" stroke="#e7dfb8" stroke-width="4" stroke-dasharray="3 8"></path></g>
+                    <g class="international-detail"><use href="assets/airport.svg#annex" x="376" y="222" width="70" height="64"></use><path d="M432 229v-24l19 5-19 6" fill="#d58d61" stroke="#587d72" stroke-width="2"></path></g>
+                    <g id="airport-lots"></g>
+                    <g class="radar-detail"><use href="assets/airport.svg#radar-system" x="561" y="203" width="43" height="40"></use></g>
+                    <g class="orbit-detail" fill="none" stroke="#f9efcb" stroke-width="2"><ellipse cx="1088" cy="289" rx="83" ry="28" transform="rotate(-25 1088 289)"></ellipse><circle cx="1154" cy="252" r="5" fill="#e6b269"></circle></g>
+                    <use class="parked-plane" href="assets/airport.svg#plane" x="785" y="159" width="65" height="57"></use>
+                    <g class="apron-people" fill="#3e6964"><circle cx="413" cy="300" r="3"></circle><circle cx="420" cy="307" r="3" fill="#ce8459"></circle><circle cx="430" cy="300" r="3"></circle><path d="M413 304v6m7 1v5m10-12v6" stroke="#53786d" stroke-width="3"></path></g>
+                    <g class="service-vehicle"><use href="assets/airport.svg#van" x="165" y="298" width="39" height="35"></use></g>
+                    <g id="ambient-traffic"><g class="ambient-flight"><use href="assets/airport.svg#plane" x="-130" y="76" width="107" height="94"></use></g><g class="cargo-flight"><use href="assets/airport.svg#cargo-plane" x="-140" y="80" width="120" height="105"></use></g></g>
+                    <g id="manual-flights"></g>
+                    <rect class="storm-shade" width="1200" height="500" fill="#254753" opacity=".25"></rect>
+                    <rect class="rain-detail" width="1200" height="500" fill="url(#rain)"></rect>
+                    <g class="clouds"><use class="cloud cloud-one" href="assets/airport.svg#cloud" x="20" y="-26" width="190" height="140"></use><use class="cloud cloud-two" href="assets/airport.svg#cloud" x="680" y="-38" width="230" height="150"></use></g>
+                </svg>
+            </div>
+            <p id="scene-summary" class="sr-only">Grass-strip airfield. No facilities built yet.</p>
+            <div class="scene-caption"><span class="stage-label"><span class="live-dot"></span><span id="scene-stage">Grass-strip airfield</span></span><div class="scene-counts"><span id="scene-built">0 / 10 facilities</span><span id="scene-upgrades">0 upgrades installed</span></div><span class="map-scroll-hint">Swipe map to explore ↔</span></div>
+            <div class="flight-deck">
+                <div><p class="eyebrow">Your next departure starts here</p><div id="click-value" class="click-value">+$2 · +1 pax per flight</div></div>
+                <div class="clicker-area"><button id="main-clicker" type="button">Operate Flight <span aria-hidden="true">↗</span></button><div id="click-feedback" aria-hidden="true"></div></div>
+            </div>
+        </section>
+
         <main>
             <div class="game-area">
+                <div class="shop-heading"><div><p class="eyebrow">Make room for what's next</p><h2>Build your airport</h2></div><span class="shop-caption">Small investments. Bigger horizons.</span></div>
                 <div id="event-banner" class="event-banner hidden"></div>
-
-                <div class="clicker-area">
-                    <button id="main-clicker">Operate Flight</button>
-                    <div id="click-value" class="click-value">+$2 · +1 pax per flight</div>
-                    <div id="click-feedback"></div>
-                </div>
 
                 <div class="shop-toolbar">
                     <span class="qty-label">Buy amount:</span>
@@ -58,11 +114,11 @@
                 </div>
 
                 <div class="tabs">
-                    <button class="tab-button active" data-tab="buildings">Buildings<span class="badge"></span></button>
-                    <button class="tab-button" data-tab="staff">Staff<span class="badge"></span></button>
-                    <button class="tab-button" data-tab="upgrades">Upgrades<span class="badge"></span></button>
-                    <button class="tab-button" data-tab="achievements">Achievements</button>
-                    <button class="tab-button" data-tab="stats">Stats</button>
+                    <button class="tab-button active" data-tab="buildings" aria-pressed="true" aria-controls="buildings">Buildings<span class="badge"></span></button>
+                    <button class="tab-button" data-tab="staff" aria-pressed="false" aria-controls="staff">Staff<span class="badge"></span></button>
+                    <button class="tab-button" data-tab="upgrades" aria-pressed="false" aria-controls="upgrades">Upgrades<span class="badge"></span></button>
+                    <button class="tab-button" data-tab="achievements" aria-pressed="false" aria-controls="achievements">Achievements</button>
+                    <button class="tab-button" data-tab="stats" aria-pressed="false" aria-controls="stats">Stats</button>
                 </div>
 
                 <div class="tab-content">
@@ -112,16 +168,19 @@
                 </div>
             </div>
 
-            <div class="notifications">
-                <h3>Notifications</h3>
+            <aside class="airport-sidebar">
+                <div class="field-note"><p class="eyebrow">The master plan</p><svg viewBox="0 0 128 112" class="field-note-art" aria-hidden="true"><use href="assets/airport.svg#terminal" width="128" height="112"></use></svg><h3>A place of your own.</h3><p id="scene-hint">Next on the map: buy your first runway.</p><p class="field-note-tip">Your first purchase adds a facility to the map. Buildings gain extensions at 10 and 25 owned; runways have eight slots.</p></div>
+                <div class="notifications">
+                <h3><span class="live-dot"></span> Flight log</h3>
                 <div id="notification-list">
                     <!-- Notifications will appear here -->
                 </div>
-            </div>
+                </div>
+            </aside>
         </main>
 
         <footer>
-            <p>Airport Clicker — grow a runway shack into a spaceport empire</p>
+            <p>Airport Clicker <span>·</span> From humble beginnings to higher things.</p><p>Original art. Endless horizons.</p>
         </footer>
     </div>
 

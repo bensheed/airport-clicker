@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500">
+  <title>A little airport beside the river</title>
+  <defs>
+    <pattern id="grass" width="46" height="40" patternUnits="userSpaceOnUse">
+      <path d="m10 16 2-3 2 3m20 14 2-3 2 3" fill="none" stroke="#7eaa7c" stroke-width="1.5" opacity=".35"/>
+    </pattern>
+    <g id="pine">
+      <ellipse cx="3" cy="11" rx="12" ry="5" fill="#345c45" opacity=".13"/>
+      <path d="M-2 0h4v13h-4" fill="#9a8560"/>
+      <path d="M0-24-13 0h6l-9 10h32L7 0h6z" fill="#588a6d"/>
+      <path d="M0-24-13 0h6l-9 10H0z" fill="#739e74"/>
+    </g>
+    <g id="bush"><ellipse cx="2" cy="3" rx="15" ry="6" fill="#557e58" opacity=".13"/><circle cx="-7" cy="-2" r="8" fill="#8eb17c"/><circle cx="4" cy="-5" r="11" fill="#799f70"/><circle cx="13" cy="0" r="7" fill="#92b17b"/></g>
+  </defs>
+  <path fill="#b7cda0" d="M0 0h1200v500H0z"/>
+  <path fill="url(#grass)" d="M0 0h1200v500H0z"/>
+  <path d="M-20 24Q240 9 480 26t440-4" fill="none" stroke="#cad6ac" stroke-width="24"/>
+  <path d="M1032-20c-118 111-70 148-102 232s-25 155 14 201 30 75 13 107h134c-10-45-26-74-50-103s-51-91-20-160 19-119 82-163l59-75z" fill="#d9d7ac"/>
+  <path d="M1055-20c-117 110-69 153-103 240s-15 146 15 183 43 81 17 117h79c-2-41-21-77-47-110s-46-90-15-162 17-122 83-169l61-99z" fill="#91beb7"/>
+  <path d="M1068-10c-74 60-83 115-72 145s-14 77-21 94m20 154c21 35 38 57 38 91" fill="none" stroke="#b5d3c4" stroke-width="3" stroke-linecap="round"/>
+  <path d="m1020 183 19 1m-12 5 21 1m-86 119 20 1m-16 5 24 1m66-273h19m-25 6h16" stroke="#c6decd" stroke-width="2" stroke-linecap="round"/>
+  <path d="M0 479h1200" stroke="#9da58b" stroke-width="38"/>
+  <path d="M0 476h1200" stroke="#e6ddba" stroke-width="28"/>
+  <path d="M0 476h1200" stroke="#bcb69b" stroke-width="2" stroke-dasharray="16 20"/>
+  <path d="M935 456h139v40H935z" fill="#668e81"/>
+  <path d="M935 460h139v31H935z" fill="#e8dfbc"/>
+  <path d="M935 456h139m-139 40h139" stroke="#446f6b" stroke-width="4"/>
+  <path d="M951 453v8m24-8v8m24-8v8m24-8v8m24-8v8m24-8v8" stroke="#446f6b" stroke-width="3"/>
+  <rect x="65" y="202" width="797" height="246" rx="15" fill="#a0b697"/>
+  <rect x="70" y="198" width="792" height="245" rx="13" fill="#d1d0b6"/>
+  <path d="M82 325h771M250 209v225m188-225v225m188-225v225m189-225v225" fill="none" stroke="#b7baa2" stroke-width="2"/>
+  <path d="M82 325h771" stroke="#ede3bc" stroke-width="2" stroke-dasharray="12 12"/>
+  <path d="M245 198v-21m188 21v-21m188 21v-21m188 21v-21" fill="none" stroke="#c4c4a6" stroke-width="18"/>
+  <path d="M78 183h777" stroke="#e3d9ad" stroke-width="16" stroke-linecap="round"/>
+  <path d="M78 183h777" stroke="#aaac8b" stroke-width="1.5" stroke-dasharray="10 12"/>
+  <path d="M174 443v19m566-19v19" stroke="#d1d0b6" stroke-width="27"/>
+  <rect x="1015" y="315" width="146" height="106" rx="17" fill="#c6c8a6"/>
+  <ellipse cx="1087" cy="340" rx="61" ry="31" fill="none" stroke="#e6dfba" stroke-width="3"/>
+  <path d="M1088 418v44" stroke="#ded6b3" stroke-width="19"/>
+  <path d="M29 56v369m-4-365h8m-8 26h8m-8 26h8m-8 26h8m-8 26h8m-8 26h8m-8 26h8m-8 26h8m-8 26h8m-8 26h8m-8 26h8m-8 26h8m-8 26h8m-8 26h8m-8 26h8" fill="none" stroke="#8daa7b" stroke-width="1.5"/>
+  <g font-family="Arial,sans-serif" font-size="9" font-weight="bold" letter-spacing="3" fill="#698a6b">
+    <text x="75" y="33">AC / LITTLE RIVER AIRFIELD</text>
+    <text x="1090" y="450" text-anchor="middle">LAUNCH SITE</text>
+    <text x="893" y="362" transform="rotate(-90 893 362)">LITTLE RIVER</text>
+  </g>
+  <g transform="translate(1137 51)" fill="#547961">
+    <circle r="23" fill="none" stroke="#89a97f"/>
+    <path d="M0-17 6 10 0 6-6 10z"/>
+    <text y="-31" text-anchor="middle" font-size="11" font-family="Arial,sans-serif">N</text>
+  </g>
+  <g>
+    <use href="#pine" x="54" y="40"/><use href="#pine" x="37" y="23"/>
+    <use href="#pine" x="899" y="35"/><use href="#pine" x="921" y="52"/>
+    <use href="#pine" x="875" y="18"/><use href="#pine" x="946" y="17"/>
+    <use href="#pine" x="45" y="447"/><use href="#pine" x="21" y="430"/>
+    <use href="#pine" x="874" y="411"/><use href="#pine" x="901" y="435"/>
+    <use href="#pine" x="870" y="453"/><use href="#pine" x="915" y="458"/>
+    <use href="#pine" x="1167" y="424"/><use href="#pine" x="1189" y="441"/>
+    <use href="#pine" x="1188" y="394"/><use href="#pine" x="1163" y="119"/>
+    <use href="#pine" x="1143" y="136"/><use href="#pine" x="1183" y="147"/>
+    <use href="#pine" x="1072" y="154"/><use href="#pine" x="1085" y="180"/>
+    <use href="#bush" x="102" y="454"/><use href="#bush" x="458" y="454"/>
+    <use href="#bush" x="639" y="451"/><use href="#bush" x="909" y="187"/>
+    <use href="#bush" x="1130" y="205"/><use href="#bush" x="1124" y="440"/>
+    <use href="#bush" x="330" y="30"/><use href="#bush" x="725" y="28"/>
+  </g>
+  <path d="M878 156v-51m-5 51h10" fill="none" stroke="#50796e" stroke-width="3"/>
+  <path d="m878 105 37 8v11l-37-3z" fill="#f3ebce"/>
+  <path d="m878 105 9 2v15l-9-1zm18 4 9 2v12l-9-1z" fill="#d98a59"/>
+  <ellipse cx="877" cy="159" rx="13" ry="4" fill="#6a8f70" opacity=".3"/>
+</svg>
